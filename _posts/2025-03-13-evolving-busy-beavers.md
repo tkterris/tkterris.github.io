@@ -48,9 +48,9 @@ However, the number of halting prefix-free programs of length *2<sup>n+1</sup>* 
 
 ### Upper bounds on the number of halting programs
 
-The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-｜p｜</sup>) ｜ p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for (asymptotically) all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))n<sup>-1</sup>* and *f(n) = (n log(n) log(log(n)))n<sup>-1</sup>* so on, until we get *f(n) <= iterLogProduct(x)<sup>-1</sup>*. 
+The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-｜p｜</sup>) ｜ p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for (asymptotically) all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))<sup>-1</sup>* and *f(n) = (n log(n) log(log(n)))<sup>-1</sup>* and so on, until we get *f(n) <= iterLogProduct(x)<sup>-1</sup>*. 
 
-> Aside: I want to emphasize that this doesn't necessarily apply for __all__ *n*, just the vast majority, with probability approaching 1 as *n* tends to infinity. We can easily construct an example where this doesn't hold for a single *n*. Consider the prefix-free language which is defined: 
+> Aside: this doesn't necessarily apply for __all__ *n*, just the vast majority, with probability approaching 1 as *n* tends to infinity. We can easily construct an example where this doesn't hold for a single *n*. Consider the prefix-free language which is defined: 
 > - if the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc)
 > - if the first bit is a one, read exactly *2⇈20* bits, halting if the last bit is even
 > 
@@ -80,6 +80,8 @@ However, *p* is equal to the number of advice bits, whose upper bound as shown a
 ---
 
 I'm not completely confident in this proof, particularly the hand-waviness around *iterLogSum(x)* vs *log(iterLogProduct(x))* vs *len(enc(x))*. Also, I'm sure there's a much clearer way to express the idea of the asymptotically-increasing probability that the conditions hold, but I'm not familiar enough with the literature to know the standard way to phrase that. That said, it does __feel__ true -- in sequence A195691 [^5], you can see that while the number of lambda terms of a given length does increase, it still holds that *log(A195691(n)) < n - iterLogSum(n)*. For example, *log(A195691(44)) = log(104234931) <= 27*, while *44 - iterLogSum(44) = 44 - 13 = 31*. 
+
+It would also be worth investigating the occasional breaking cases. While it could theoretically occur infinitely many times (just infinitely less often), I suspect that for any sensible language it never actually happens. Whether this is true, and what exactly "sensibe" means, aren't obvious. 
 
 ---
 
