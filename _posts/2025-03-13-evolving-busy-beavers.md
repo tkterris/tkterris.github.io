@@ -1,15 +1,15 @@
 ---
-modified_date: 2025-03-14
+modified_date: 2025-03-15
 ---
 # Deriving BB(n+1) from BB(n) with O(1) advice bits
 
 ## Introduction
 
-In section 5.5 of The Busy Beaver Frontier [^1], Scott Aaronson describes a proof by Chaitin [^2] that, for any universal prefix-free language *L*, *K (BB<sub>L</sub>(n + 1) \| BB<sub>L</sub>(n)) = O(log n)*, where *K(A\|B)* is the prefix-free Kolmogorov complexity of *A* given the input string *B*. That is, if you know the *n*'th Busy Beaver, you could determine *BB<sub>L</sub>(n+1)* with *O(log n)* additional bits. At the end of the section, Aaronson poses the following question:
+In section 5.5 of The Busy Beaver Frontier [^1], Scott Aaronson describes a proof by Chaitin [^2] that, for any universal prefix-free language *L*, *K (BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) = O(log n)*, where *K(A\|B)* is the prefix-free Kolmogorov complexity of *A* given the input string *B*. That is, if you know the *n*'th Busy Beaver, you could determine *BB<sub>L</sub>(n+1)* with *O(log n)* additional bits. At the end of the section, Aaronson poses the following question:
 
 > On the other hand, for bit-based programs, could Theorem 20 be improved to get the number of advice bits below O(log n)—possibly even down to a constant? How interrelated are the successive values of BB(n)?
 
-In this post, I sketch a proof that the required number of advice bits is indeed a constant, with a probability approaching 1 as *n* tends to infinity. This won't necessarily be true for all *n* -- see the block-quote aside further down -- but in the worst case, the frequency of such *n* will asymptotically approach zero. This uses a similar approach to that used in [^1], but instead of incrementally checking lower bounds to Chaitin's constant, we incrementally check a tally of the number of programs of length *n+1* that halt.
+In this post, I sketch a proof that the required number of advice bits needed to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* is indeed a constant, for [almost all](https://mathworld.wolfram.com/AlmostAll.html) *n*. This uses a similar approach to that used in [^1], but instead of incrementally checking lower bounds to Chaitin's constant, we incrementally check a tally of the number of programs of length *n+1* that halt.
 
 ---
 
@@ -17,15 +17,16 @@ In this post, I sketch a proof that the required number of advice bits is indeed
 
 This proof sketch consists of two parts: 
 - a description of a method used to determine the number of halting programs of length *n+1* from *BB<sub>L</sub>(n)* with some bits of uncertainty
-- a demonstration that the number of advice bits needed to resolve that uncertainty, getting the number of halting programs of length *n+1* and therefore *BB<sub>L</sub>(n + 1)*, is almost always a constant
+- a demonstration that the number of advice bits needed to resolve that uncertainty, getting the number of halting programs of length *n+1* and therefore *BB<sub>L</sub>(n+1)*, is a constant for almost all *n*
 
 Note that while the Busy Beaver game envisioned by Radó [^3] involved *n*-state, two-symbol Turing machines, in this post we will be considering the equivalent function for *n*-bit programs in a prefix-free universal language *L* (the choice of language itself doesn't matter; the results are equivalent for Lisp, Zot, Binary Lambda Calculus, or any other such language). So, from here on out, *BB(n)* specifically means *BB<sub>L</sub>(n)*. Also, we're doing computer science today, so every *log* you see is the logarithm base 2, rounded down to the nearest integer.
 
 First, some notation: 
-- *log\*(x)* is the iterated logarithm[^4] of *x*.
-- *iterLogProduct(x)* is the product of the repeated logarithm of the integer *x* (including *x* itself) until we get 1, then multiplied by *2^log\*(x)*, i.e. *x \* log(x) \* log(log(x)) \* ... \* 2 \* 2^log\*(x)*. 
-- *iterLogSum(x)* is the sum of the repeated logarithm of the integer *x* until we get 1, plus *log\*(x)*, i.e. *log(x) + log(log(x)) + log(log(log(x))) + ... + 1 + log\*(x)*. Note that *log(iterLogProduct(x))* is equal to *iterLogSum(x)*.
-- *enc(x)* returns the prefix-free encoding of the integer *x*, e.g. the Elias omega coding [^5]. For any *x*, *len(enc(x)) = iterLogSum(x)*.
+- *log\*(x)* is the [iterated logarithm](https://en.wikipedia.org/wiki/Iterated_logarithm) of *x*.
+- *iterLogProduct(x)* is the product of the repeated logarithm of the integer *x* (including *x* itself) until we get 1, then multiplied by *2^log\*(x+1)*, i.e. *x \* log(x) \* log(log(x)) \* ... \* 2 \* 2^log\*(x+1)*. 
+- *iterLogSum(x)* is the sum of the repeated logarithm of the integer *x* until we get 1, plus *log\*(x+1)*, i.e. *log(x) + log(log(x)) + log(log(log(x))) + ... + 1 + log\*(x+1)*. Note that *log(iterLogProduct(x))* is equal to *iterLogSum(x)*.
+- *enc(x)* returns the (prefix-free) [Elias omega coding](https://en.wikipedia.org/wiki/Elias_omega_coding) of the integer *x*. Note that for any *x*, *len(enc(x)) = iterLogSum(x)*.
+- When I say a condition applies for "almost all *n*", I mean it in the sense described [here](https://mathworld.wolfram.com/AlmostAll.html). That is, as *n* increases, the probability that the condition holds asymptotically converges on 1.
 
 ### Estimating the number of halting programs of length *n+1*
 
@@ -55,54 +56,50 @@ However, the number of halting prefix-free programs of length *2<sup>n+1</sup>* 
 
 ### Upper bounds on the number of halting programs
 
-The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-\|p\|</sup>) \| p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for (asymptotically) all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))<sup>-1</sup>* and for *f(n) = (n log(n) log(log(n)))<sup>-1</sup>* and so on. Finally, we can still satisfy the inequality if we multiply by a factor of *2^-log\*(x)* (since *log\*(x) < log<sup>m</sup>(x)* for all *m*) and offset the argument for *iterLogProduct* by 1 (resulting in an increase in the infinite sum by a constant). Ultimately, this gives us result <span id="result2">__(2)__</span>: *f(n) <= iterLogProduct(n-1)<sup>-1</sup>*.
+The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-\|p\|</sup>) \| p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for almost all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))<sup>-1</sup>* and for *f(n) = (n log(n) log(log(n)))<sup>-1</sup>* and so on. Finally, we can still satisfy the inequality if we multiply by a factor of *2^-log\*(x+1)* (since *log\*(x) < log<sup>m</sup>(x)* for all *m*) and offset the argument for *iterLogProduct* by 1 (resulting in an increase in the infinite sum by a constant). Ultimately, we find that *f(n) < iterLogProduct(n-1)<sup>-1</sup>* for almost all *n*.[^4]
 
-> Aside: this doesn't necessarily apply for __all__ *n*, just the vast majority, with probability approaching 1 as *n* tends to infinity. We can easily construct an example where this doesn't hold for a single *n*. Consider the prefix-free language which is defined: 
-> - if the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc)
-> - if the first bit is a one, read exactly *2⇈20* bits, halting iff the last bit is even
-> 
-> Suppose we knew *BB(2⇈20)*. In this case, the candidate for *doesThisManyHalt* for *BB(n+1)* would be *O(n)* bits long (specifically, *2⇈20* bits). So, we'd need *O(log(n))* advice bits to use *doesThisManyHalt* to determine *BB(n+1)* for this particular value of *n*.
-
-So, for almost all cases (and probably actually all of them for sensible languages), [result (2)](#result2) holds. By substituting it in to the number of halting programs *2^(n) * f(n)*, we find that the maximum bits required for the candidate of *doesThisManyHalt* is:
+By substituting *iterLogProduct(n-1)<sup>-1</sup>* for *f(n)* in the number of halting programs *2^(n) * f(n)*, we find that the maximum bits required for the candidate of *doesThisManyHalt* is:
 
 ```
 requiredBits = log(number of halting programs of length n+1) + 1
              = log(2^(n+1) * f(n+1)) + 1
-             < log(2^(n+1) * iterLogProduct((n+1)-1)^-1) + 1  //from (2)
+             < log(2^(n+1) * iterLogProduct((n+1)-1)^-1) + 1
              < n + 1 - log(iterLogProduct(n)) + 1
              < n + 2 - iterLogSum(n)
              < n + 2 - len(enc(n))
 ```
 
-So, the required number of bits to count the number of halting programs of length *n+1* is less than *n + 2 - len(enc(n))*, giving result <span id="result3">__(3)__</span>.
+So, the required number of bits to count the number of halting programs of length *n+1* is less than *n + 2 - len(enc(n))*, giving result <span id="result2">__(2)__</span>.
 
-Recall [result (1)](#result1), the number of bits of the candidate is equal to *n - C - len(enc(n)) - len(enc(p))*, where *C* is the constant length of *doesThisManyHalt* (not including input) and *p* is the number of advice bits we will need. Since the number of advice bits is the required number of bits minus the number of bits in the candidate, by substituting [result (1)](#result1) and [result (3)](#result3) for the candidate and required bits we have:
+Recall [result (1)](#result1), the number of bits of the candidate is equal to *n - C - len(enc(n)) - len(enc(p))*, where *C* is the constant length of *doesThisManyHalt* (not including input) and *p* is the number of advice bits we will need. The number of advice bits *p* is the required number of bits minus the number of bits in the candidate. So, by substituting [result (1)](#result1) and [result (2)](#result2) for the candidate and required bits, we have:
 
 ```
 adviceBits = p = requiredBits - candidateBits
-             p < n + 2 - len(enc(n)) - candidateBits                        //from (3)
-             p < n + 2 - len(enc(n)) - (n - C - len(enc(n)) - len(enc(p)))  //from (1)
+             p = requiredBits - (n - C - len(enc(n)) - len(enc(p)))         //from (1)
+             p < n + 2 - len(enc(n)) - (n - C - len(enc(n)) - len(enc(p)))  //from (2)
              p < C + 2 + len(enc(p))
 ```
 
-So, the number of advice bits *p* is less than *C + 2 + len(enc(p))*. However, this quantity is independent of *n*. So, with probability approaching 1 as *n* approaches infinity, the number of required advice bits is a constant. ∎
+Which gives result <span id="result3">__(3)__</span>: the number of advice bits *p* is less than *C + 2 + len(enc(p))*. However, this ceiling on the number of advice bits is independent of *n*. So, for almost all *n*, the number of advice bits needed to determine *BB(n+1)* given *BB(n)* is at most a constant. ∎
 
 ---
 
 ## Discussion
 
-I'm not completely confident in this proof, particularly the hand-waviness around the sum of *iterLogProduct(n-1)<sup>-1</sup>* diverging. Also, I'm sure there's a much clearer way to express the idea of the asymptotically-increasing probability that the conditions hold, but I'm not familiar enough with the literature to know the standard way to phrase that. That said, it does __feel__ true -- in sequence A195691 [^6], you can see that [result (3)](#result3) holds: *requiredBits(n+1) < n + 2 - len(enc(n))*. For example, *requiredBits(44) = log(A195691(44)) + 1 = log(104234931) + 1 = 27*, while *(44 - 1) + 2 - len(enc(44 - 1)) = 45 - 11 = 34*. 
+I'm not completely confident in this proof, particularly the hand-waviness around the sum of *iterLogProduct(n-1)<sup>-1</sup>* diverging. That said, it does __feel__ true -- in OEIS sequence [A195691](https://oeis.org/A195691), you can see that [result (2)](#result2) holds: *requiredBits(n+1) < n + 2 - len(enc(n))*. For example, *requiredBits(44) = log(A195691(44)) + 1 = log(104234931) + 1 = 27*, while *(44 - 1) + 2 - len(enc(44 - 1)) = 45 - 12 = 33*. 
 
 An interesting conclusion is that all but a constant number of programs of length *n+1* halt before *BB(n)* -- that is, *doesThisManyHalt* with *n* total bits runs longer than all but the last *2<sup>p</sup>* programs of length *n+1*. So, incrementing *n* only adds a constant number of "interesting" programs (i.e. programs of length *n+1* that run longer than *BB(n)*). This goes against my intuition that things ought to get "exponentially more interesting" as program lengths increase.
 
-It would be worth investigating the occasional cases where [result (3)](#result3) breaks -- while it could theoretically occur infinitely many times (just infinitely less often as *n* increases), I suspect that for any sensible language it never actually happens. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters?
+It would be worth investigating the occasional cases where [result (2)](#result2) breaks -- while it could theoretically occur infinitely many times (just infinitely less often as *n* increases), I suspect that for any sensible language it never actually happens. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters?
 
 ---
 
 [^1]: Scott Aaronson. 2020. The Busy Beaver Frontier. <https://www.scottaaronson.com/papers/bb.pdf>
 [^2]: G. Chaitin. To a mathematical theory of evolution and biological creativity. Technical Report 391, Centre for Discrete Mathematics and Theoretical Computer Science, 2010. <https://www.cs.auckland.ac.nz/research/groups/CDMTCS/researchreports/391greg.pdf>.
 [^3]: Radó, Tibor (May 1962). "On non-computable functions". Bell System Technical Journal. 41 (3): 877–884. <https://en.wikipedia.org/wiki/Busy_beaver>
-[^4]: <https://en.wikipedia.org/wiki/Iterated_logarithm>
-[^5]: <https://en.wikipedia.org/wiki/Elias_omega_coding>
-[^6]: <https://oeis.org/A195691>
+[^4]: To be clear, this doesn't necessarily apply for __all__ *n*, just the vast majority, with probability approaching 1 as *n* tends to infinity. We can easily construct an example where this doesn't hold for a single *n*. Consider the prefix-free language which is defined: 
+    - if the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc)
+    - if the first bit is a one, read exactly *2⇈20* bits, halting iff the last bit is even
+    
+    Suppose we knew *BB(2⇈20)*. In this case, the candidate for *doesThisManyHalt* for *BB(n+1)* would be *O(n)* bits long (specifically, *2⇈20* bits). So, we'd need *O(log(n))* advice bits to use *doesThisManyHalt* to determine *BB(n+1)* for this particular value of *n*.
 
