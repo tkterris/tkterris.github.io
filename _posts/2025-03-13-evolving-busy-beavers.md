@@ -1,3 +1,6 @@
+---
+modified_date: 2025-03-14
+---
 # Deriving BB(n+1) from BB(n) with O(1) advice bits
 
 ## Introduction
@@ -42,7 +45,7 @@ doesThisManyHalt(int n, int p, bitstream stream) {
 }
 ```
 
-Suppose we know *BB(n)*. *doesThisManyHalt* takes a prefix-free coding of *n*, a prefix-free coding of some number *p* of lost bits of precision, and a non-prefix-free bitstream of the binary representation of the candidate value for the number of programs of exactly length *n+1* that halt (with *p* least-significant bits truncated). It consumes enough bits of the bitstream such that the length of the program (*C*) plus its inputs (*len(enc(n))*, *len(enc(p))*, and the candidate's bits) is equal to *n*. This gives us result __(1)__: *doesThisManyHalt* consumes *n - C - len(enc(n)) - len(enc(p))* candidate bits. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, running them in parallel. Whenever one of them halts, it is added to a tally, and if that tally exceeds the input candidate multiplied by *2<sup>p</sup>*, the entire program halts. 
+Suppose we know *BB(n)*. *doesThisManyHalt* takes a prefix-free coding of *n*, a prefix-free coding of some number *p* of lost bits of precision, and a non-prefix-free bitstream of the binary representation of the candidate value for the number of programs of exactly length *n+1* that halt (with *p* least-significant bits truncated). It consumes enough bits of the bitstream such that the length of the program (*C*) plus its inputs (*len(enc(n))*, *len(enc(p))*, and the candidate's bits) is equal to *n*. This gives us result <span id="result1">__(1)__</span>: *doesThisManyHalt* consumes *n - C - len(enc(n)) - len(enc(p))* candidate bits. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, running them in parallel. Whenever one of them halts, it is added to a tally, and if that tally exceeds the input candidate multiplied by *2<sup>p</sup>*, the entire program halts. 
 
 Because this program and its inputs are length *n* and we know *BB(n)*, we can evaluate whether this program halts. So, this can be used in a test to determine the number of halting programs of length *n+1*: repeatedly check if *doesThisManyHalt* halts, incrementing the candidate bitstream if it does. If the bitstream is saturated with 1's, increment the number of lost bits *p* and retry. Eventually we will have found inputs that do not halt, and so we will have computed an estimate of the number of halting programs of length *n+1*. The value *p* of the amount of lost precision is the number of advice bits we need -- once we have those last few bits from an oracle, we will know the exact number of programs of length *n+1* that halt. We can then run all such programs in parallel until that many halt, and we can select the longest-running such program as *BB(n+1)*.
 
@@ -52,7 +55,7 @@ However, the number of halting prefix-free programs of length *2<sup>n+1</sup>* 
 
 ### Upper bounds on the number of halting programs
 
-The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-\|p\|</sup>) \| p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for (asymptotically) all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))<sup>-1</sup>* and for *f(n) = (n log(n) log(log(n)))<sup>-1</sup>* and so on. Finally, we can still satisfy the inequality if we multiply by a factor of *2^-log\*(x)* (since *log\*(x) < log<sup>m</sup>(x)* for all *m*) and offset the argument for *iterLogProduct* by 1 (resulting in a decrease in the infinite sum by a constant). Ultimately, this gives us result __(2)__: *f(n) <= iterLogProduct(n-1)<sup>-1</sup>*.
+The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-\|p\|</sup>) \| p halts*. However, instead of this formulation, consider the function *f(n)* which is the fraction of programs of length *n* that halt, i.e. for each *n* there are *2<sup>n</sup>f(n)* programs of length *n* that halt. Because each halting program of length *n* contributes *2<sup>-n</sup>* to Chaitin's constant, we have *Ω = sum(2<sup>n</sup>f(n)2<sup>-n</sup>) = sum(f(n))* for all *n = 1 → ∞*. This means that *f(n) < n<sup>-1</sup>* for (asymptotically) all *n*, since the harmonic series diverges and Chaitin's constant does not. The same goes for *f(n) = (n log(n))<sup>-1</sup>* and for *f(n) = (n log(n) log(log(n)))<sup>-1</sup>* and so on. Finally, we can still satisfy the inequality if we multiply by a factor of *2^-log\*(x)* (since *log\*(x) < log<sup>m</sup>(x)* for all *m*) and offset the argument for *iterLogProduct* by 1 (resulting in an increase in the infinite sum by a constant). Ultimately, this gives us result <span id="result2">__(2)__</span>: *f(n) <= iterLogProduct(n-1)<sup>-1</sup>*.
 
 > Aside: this doesn't necessarily apply for __all__ *n*, just the vast majority, with probability approaching 1 as *n* tends to infinity. We can easily construct an example where this doesn't hold for a single *n*. Consider the prefix-free language which is defined: 
 > - if the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc)
@@ -60,7 +63,7 @@ The definition of Chaitin's constant: over all programs *p*, *Ω = sum(2<sup>-\|
 > 
 > Suppose we knew *BB(2⇈20)*. In this case, the candidate for *doesThisManyHalt* for *BB(n+1)* would be *O(n)* bits long (specifically, *2⇈20* bits). So, we'd need *O(log(n))* advice bits to use *doesThisManyHalt* to determine *BB(n+1)* for this particular value of *n*.
 
-So, for almost all cases (and probably actually all of them for sensible languages), result __(2)__ holds. By substituting it in to the number of halting programs *log(2^(n) * f(n))*, we find that the maximum bits required for the candidate of *doesThisManyHalt* is:
+So, for almost all cases (and probably actually all of them for sensible languages), [result (2)](#result2) holds. By substituting it in to the number of halting programs *2^(n) * f(n)*, we find that the maximum bits required for the candidate of *doesThisManyHalt* is:
 
 ```
 requiredBits = log(number of halting programs of length n+1) + 1
@@ -71,9 +74,9 @@ requiredBits = log(number of halting programs of length n+1) + 1
              < n + 2 - len(enc(n))
 ```
 
-So, the required number of bits to count the number of halting programs of length *n+1* is less than *n + 2 - len(enc(n))*, giving result __(3)__.
+So, the required number of bits to count the number of halting programs of length *n+1* is less than *n + 2 - len(enc(n))*, giving result <span id="result3">__(3)__</span>.
 
-Recall result __(1)__, the number of bits of the candidate is equal to *n - C - len(enc(n)) - len(enc(p))*, where *C* is the constant length of *doesThisManyHalt* (not including input) and *p* is the number of advice bits we will need. Since the number of advice bits is the required number of bits minus the number of bits in the candidate, by substituting __(1)__ and __(3)__ for the candidate and required bits we have:
+Recall [result (1)](#result1), the number of bits of the candidate is equal to *n - C - len(enc(n)) - len(enc(p))*, where *C* is the constant length of *doesThisManyHalt* (not including input) and *p* is the number of advice bits we will need. Since the number of advice bits is the required number of bits minus the number of bits in the candidate, by substituting [result (1)](#result1) and [result (3)](#result3) for the candidate and required bits we have:
 
 ```
 adviceBits = p = requiredBits - candidateBits
@@ -88,15 +91,11 @@ So, the number of advice bits *p* is less than *C + 2 + len(enc(p))*. However, t
 
 ## Discussion
 
-I'm not completely confident in this proof, particularly the hand-waviness around the sum of *iterLogProduct(n-1)<sup>-1</sup>* diverging. Also, I'm sure there's a much clearer way to express the idea of the asymptotically-increasing probability that the conditions hold, but I'm not familiar enough with the literature to know the standard way to phrase that. That said, it does __feel__ true -- in sequence A195691 [^6], you can see that result __(3)__ holds: *requiredBits(n+1) < n + 2 - len(enc(n))*. For example, *requiredBits(44) = log(A195691(44)) + 1 = log(104234931) + 1 = 27*, while *(44 - 1) + 2 - len(enc(44 - 1)) = 45 - 11 = 34*. 
+I'm not completely confident in this proof, particularly the hand-waviness around the sum of *iterLogProduct(n-1)<sup>-1</sup>* diverging. Also, I'm sure there's a much clearer way to express the idea of the asymptotically-increasing probability that the conditions hold, but I'm not familiar enough with the literature to know the standard way to phrase that. That said, it does __feel__ true -- in sequence A195691 [^6], you can see that [result (3)](#result3) holds: *requiredBits(n+1) < n + 2 - len(enc(n))*. For example, *requiredBits(44) = log(A195691(44)) + 1 = log(104234931) + 1 = 27*, while *(44 - 1) + 2 - len(enc(44 - 1)) = 45 - 11 = 34*. 
 
 An interesting conclusion is that all but a constant number of programs of length *n+1* halt before *BB(n)* -- that is, *doesThisManyHalt* with *n* total bits runs longer than all but the last *2<sup>p</sup>* programs of length *n+1*. So, incrementing *n* only adds a constant number of "interesting" programs (i.e. programs of length *n+1* that run longer than *BB(n)*). This goes against my intuition that things ought to get "exponentially more interesting" as program lengths increase.
 
-It would be worth investigating the occasional breaking cases -- while it could theoretically occur infinitely many times (just infinitely less often as *n* increases), I suspect that for any sensible language it never actually happens. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters?
-
----
-
-Updated 2025-03-14
+It would be worth investigating the occasional cases where [result (3)](#result3) breaks -- while it could theoretically occur infinitely many times (just infinitely less often as *n* increases), I suspect that for any sensible language it never actually happens. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters?
 
 ---
 
