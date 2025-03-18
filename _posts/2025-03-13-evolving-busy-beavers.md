@@ -38,12 +38,15 @@ Consider the following pseudocode:
 
 ```
 doesThisManyHalt(int candidate, int p) {
+    if (candidate == 0) {
+        exit;
+    }
     int n = |doesThisManyHalt| + |enc(candidate)| + |enc(p)|;
     int halted = 0;
     getAllProgramsOfLength(n + 1).runInParallel().whenHalt(program -> {
         if (program.consumedBits == n+1) {
             halted++;
-            if (halted > candidate * 2 ^ p) {
+            if (halted >= candidate * 2 ^ p) {
                 exit;
             }
         }
@@ -53,7 +56,7 @@ doesThisManyHalt(int candidate, int p) {
 
 __Inputs and total program size:__ *doesThisManyHalt* takes a prefix-free encoding of a candidate value for *H<sub>n+1</sub>* (with *p* least-significant bits truncated from the candidate) and a prefix-free encoding of the number of truncated bits *p*. Including the program definition itself, the total number of bits consumed is *n*. That is, *n = \|doesThisManyHalt\| + \|enc(candidate)\| + \|enc(p)\|*.[^5] 
 
-__Program logic:__ First, *n* is inferred from the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, emulating them in parallel. Whenever one of the programs halts after consuming exactly *n+1* bits (both the program and its inputs), it is added to a tally *halted*. If that tally exceeds the input candidate multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
+__Program logic:__ First, the special case where *candidate = 0* is checked, and immediately halts if so. Then *n* is inferred from the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, emulating them in parallel. Whenever one of the programs halts after consuming exactly *n+1* bits (both the program and its inputs), it is added to a tally *halted*. If that tally reaches the input candidate multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
 
 __Estimating H<sub>n+1</sub>:__ Suppose we know *BB(n)*. Because *doesThisManyHalt* plus its inputs are length *n* and prefix-free, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB(n)*: 
 - Start with *candidate = 0* and *p = 0*.
@@ -61,7 +64,7 @@ __Estimating H<sub>n+1</sub>:__ Suppose we know *BB(n)*. Because *doesThisManyHa
 - If *doesThisManyHalt* halts, *H<sub>n+1</sub> >= candidate \* 2<sup>p</sup>*. Increment *candidate* by one. If that pushes the total length (program and inputs) over *n*, reset *candidate* to zero and increment *p* instead. Return to the previous step.
 - If *doesThisManyHalt* does not halt, *H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*.
 
-Take *candidate* and *p* of the run that did not halt. Any run where *p* is incremented resets *candidate* to zero, so the run before the non-halting run must have incremented *candidate* rather than *p*. So, the inputs for the last halting run must have been *candidate-1* and *p*. This gives us *(candidate - 1) \* 2<sup>p</sup> <= H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*, giving us *H<sub>n+1</sub>* within *p* bits of precision.
+Take *candidate* and *p* of the run that did not halt. Any run where *p* is incremented resets *candidate* to zero, so the difference between the non-halting run and the halting run just before it must be due to *candidate* being incremented (if *p* were incremented, the candidate for the non-halting run would be zero, so the run would have halted, a contradiction). So, the inputs for the last halting run must have been *candidate-1* and *p*. This gives us *(candidate - 1) \* 2<sup>p</sup> <= H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*, giving us *H<sub>n+1</sub>* within *p* bits of precision.
 
 If these *p* bits are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt after consuming exactly *n+1* bits, and we can select the longest-running such program as *BB(n+1)*.
 
