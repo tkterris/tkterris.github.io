@@ -23,7 +23,7 @@ More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n
 
 First, some notation: 
 - *H<sub>x</sub>* is the number of halting L-programs of length exactly *x* bits (program plus input). 
-- *enc(x)* returns the (prefix-free) [Elias omega coding](https://en.wikipedia.org/wiki/Elias_omega_coding) of the integer *x*. Note that for all *x*, *\|enc(x)\| = log(x) + \|enc(log(x))\| + O(1) = log(x) + O(log(log(x)))*.
+- *enc(x)* returns the (prefix-free) [Levenshtein coding](https://en.wikipedia.org/wiki/Levenshtein_coding) of the integer *x*. Note that for all *x*, *\|enc(x)\| = log(x) + \|enc(log(x))\| + O(1) = log(x) + O(log(log(x)))*.
 - When I say a condition applies for "almost all *n*", I mean it in the sense described [here](https://mathworld.wolfram.com/AlmostAll.html). That is, as *n* increases, the probability that the condition holds asymptotically converges on 1.
 
 #### <span id="lemma1">Lemma 1: For almost all *n*, *H<sub>n</sub> < 2<sup>n</sup> / n*</span>
