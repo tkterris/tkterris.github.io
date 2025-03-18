@@ -1,5 +1,5 @@
 ---
-modified_date: 2025-03-17
+modified_date: 2025-03-18
 ---
 # Deriving BB(n+1) from BB(n) with O(log(log(n))) advice bits
 
@@ -24,12 +24,13 @@ First, some notation:
 
 #### <span id="lemma1">Lemma 1: For almost all *n*, *H<sub>n</sub> < 2<sup>n</sup> / n*</span>
 
-The definition of Chaitin's constant *Ω* is, for all programs *p*, *Ω = Σ<sub>p halts</sub> 2<sup>-\|p\|</sup>*. However, we could instead express it as *Ω = Σ<sub>n = 1 → ∞</sub> H<sub>n</sub>2<sup>-n</sup>*. This means that: 
-- *Ω >= Σ<sub>n = 1 → ∞ \| H<sub>n</sub> >= 2<sup>n</sup> / n</sub> H<sub>n</sub>2<sup>-n</sup>* 
-- *Ω >= Σ<sub>n = 1 → ∞ \| H<sub>n</sub> >= 2<sup>n</sup> / n</sub> 2<sup>n</sup>/n \* 2<sup>-n</sup>*
-- *Ω >= Σ<sub>n = 1 → ∞ \| H<sub>n</sub> >= 2<sup>n</sup> / n</sub> 1/n*
+The definition of Chaitin's constant *Ω* is, for all halting programs *p*, *Ω = Σ 2<sup>-\|p\|</sup>*. However, we could instead express it as *Ω = Σ 2<sup>-n</sup>H<sub>n</sub>* for all *n = 1 → ∞*. This means that: 
+- *Ω = Σ 2<sup>-n</sup>H<sub>n</sub>* for all *n = 1 → ∞*
+- *Ω >= Σ 2<sup>-n</sup>H<sub>n</sub>* for all *n = 1 → ∞* such that *H<sub>n</sub> >= 2<sup>n</sup> / n*
+- *Ω >= Σ 2<sup>-n</sup>2<sup>n</sup>/n* for all *n = 1 → ∞* such that *H<sub>n</sub> >= 2<sup>n</sup> / n*
+- *Ω >= Σ 1/n* for all *n = 1 → ∞* such that *H<sub>n</sub> >= 2<sup>n</sup> / n*
 
-So, Chaitin's constant is less than some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. ∎
+So, Chaitin's constant is greater than or equal to some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. ∎
 
 #### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB(n+1)* from *BB(n)* and a number of advice bits, *p*, such that *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
