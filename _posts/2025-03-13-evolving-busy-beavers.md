@@ -19,7 +19,7 @@ Note that while the Busy Beaver game envisioned by Radó [^3] involved *n*-state
 
 First, some notation: 
 - *H<sub>x</sub>* is the number of halting L-programs of length exactly *x* bits (program plus input). 
-- *enc(x)* returns the (prefix-free) [Elias omega coding](https://en.wikipedia.org/wiki/Elias_omega_coding) of the integer *x*. Note that for all *x*, *\|enc(x)\| = log(x) + O(log(log(x)))*.
+- *enc(x)* returns the (prefix-free) [Elias omega coding](https://en.wikipedia.org/wiki/Elias_omega_coding) of the integer *x*. Note that for all *x*, *\|enc(x)\| = log(x) + \|enc(log(x))\| + O(1) = log(x) + O(log(log(x)))*.
 - When I say a condition applies for "almost all *n*", I mean it in the sense described [here](https://mathworld.wolfram.com/AlmostAll.html). That is, as *n* increases, the probability that the condition holds asymptotically converges on 1.
 
 #### <span id="lemma1">Lemma 1: For almost all *n*, *H<sub>n</sub> < 2<sup>n</sup> / n*</span>
@@ -36,9 +36,8 @@ So, Chaitin's constant is less than some subset of the harmonic series, specific
 Consider the following pseudocode:
 
 ```
-doesThisManyHalt(int n, int p, bitstream stream) {
-    int lengthOfBitstream = n - |doesThisManyHalt| - |enc(n)| - |enc(p)|;
-    int candidate = stream.readBits(lengthOfBitStream).toInt();
+doesThisManyHalt(int candidate, int p) {
+    int n = |doesThisManyHalt| + |enc(candidate)| + |enc(p)|;
     int halted = 0;
     getAllProgramsOfLength(n + 1).runInParallel().whenHalt(program -> {
         if (program.consumedBits == n+1) {
@@ -51,19 +50,37 @@ doesThisManyHalt(int n, int p, bitstream stream) {
 }
 ```
 
-*doesThisManyHalt* takes a prefix-free coding of *n*, a prefix-free coding of some number *p* of lost bits of precision, and a non-prefix-free bitstream of the binary representation of a candidate value for *H<sub>n+1</sub>* (with *p* least-significant bits truncated from the candidate). It consumes enough bits of the bitstream such that the length of the program without inputs (*\|doesThisManyHalt\|*, which we will refer to as constant *C*) plus its inputs (*\|enc(n)\|*, *\|enc(p)\|*, and the candidate's bits) is equal to *n*. That is, *doesThisManyHalt* consumes *n - C - \|enc(n)\| - \|enc(p)\|* candidate bits. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, emulating them in parallel. Whenever one of the programs halts after consuming exactly *n+1* bits (both the program and its inputs), it is added to a tally *halted*. If that tally exceeds the input candidate multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
+__Inputs and total program size:__ *doesThisManyHalt* takes a prefix-free encoding of a candidate value for *H<sub>n+1</sub>* (with *p* least-significant bits truncated from the candidate) and a prefix-free encoding of the number of truncated bits *p*. Including the program definition itself, the total number of bits consumed is *n*. That is, *n = \|doesThisManyHalt\| + \|enc(candidate)\| + \|enc(p)\|*.[^5] 
 
-Suppose we know *BB(n)*. Because *doesThisManyHalt* plus its inputs are length *n* and prefix-free, we can evaluate whether it halts. So, this can be used in a test to estimate *H<sub>n+1</sub>* given *BB(n)*: repeatedly check if *doesThisManyHalt* halts, incrementing the candidate bitstream if it does. If the bitstream is saturated with 1's, truncate the candidate's least significant bit and increment the number of lost bits *p*, and retry. Eventually we will have found inputs that do not halt, and so we will have computed an estimate of *H<sub>n+1</sub>* with *p* lost bits of precision. To get the the lost precision, we take the number of bits to represent *H<sub>n+1</sub>* in a non-prefix-free manner, and subtract the number of candidate bits we were able to find:
+__Program logic:__ First, *n* is inferred from the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs. It then iterates through each of the *2<sup>n+1</sup>* program strings of length *n+1*, emulating them in parallel. Whenever one of the programs halts after consuming exactly *n+1* bits (both the program and its inputs), it is added to a tally *halted*. If that tally exceeds the input candidate multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
+
+__Estimating H<sub>n+1</sub>:__ Suppose we know *BB(n)*. Because *doesThisManyHalt* plus its inputs are length *n* and prefix-free, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB(n)*: 
+- Start with *candidate = 0* and *p = 0*.
+- Run *doesThisManyHalt* with inputs *candidate* and *p*. Use *BB(n)* to determine if it halts.
+- If *doesThisManyHalt* halts, *H<sub>n+1</sub> >= candidate \* 2<sup>p</sup>*. Increment *candidate* by one. If that pushes the total length (program and inputs) over *n*, reset *candidate* to zero and increment *p* instead. Return to the previous step.
+- If *doesThisManyHalt* does not halt, *H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*.
+
+Take *candidate* and *p* of the run that did not halt. Any run where *p* is incremented resets *candidate* to zero, so the run before the non-halting run must have incremented *candidate* rather than *p*. So, the inputs for the last halting run must have been *candidate-1* and *p*. This gives us *(candidate - 1) \* 2<sup>p</sup> <= H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*, giving us *H<sub>n+1</sub>* within *p* bits of precision.
+
+If these *p* bits are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt after consuming exactly *n+1* bits, and we can select the longest-running such program as *BB(n+1)*.
+
+__Upper bounds on *p*:__ First, we get a bound on the (non-prefix-free) number of candidate bits, *log(candidate)*, for any run of *doesThisManyHalt* in terms of *n* and *p*. We start with *n = \|doesThisManyHalt\| + \|enc(candidate)\| + \|enc(p)\|* from "Inputs and total program size". Then:
+- *n = \|doesThisManyHalt\| + \|enc(candidate)\| + \|enc(p)\|*
+- *n = O(1) + log(candidate) + \|enc(log(candidate))\| + \|enc(p)\|*
+- *log(candidate) = n - O(1) - \|enc(log(candidate))\| - \|enc(p)\|*
+- *log(candidate) >= n - O(1) - \|enc(n)\| - \|enc(p)\|*
+
+The last reduction is valid because *candidate <= 2<sup>n</sup>*, so *log(candidate) <= n*.
+
+To get the the lost precision with the "winning" value of *p*, we take the number of bits to represent *H<sub>n+1</sub>* in a non-prefix-free manner, and subtract the number of candidate bits we were able to find:
 - *p = (bits of H<sub>n+1</sub>) - (candidate bits)*
-- *p = log(H<sub>n+1</sub>) + 1 - (n - C - \|enc(n)\| - \|enc(p)\|)*
-- *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
-
-If these *p* bits are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt after consuming exactly *n+1* bits, and we can select the longest-running such program as *BB(n+1)*. ∎
+- *p <= log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p)\|)*
+- *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n* ∎
 
 #### <span id="theorem3">Theorem 3: Given *BB(n)*, *BB(n+1)* can be determined with *O(log(log(n)))* advice bits for almost all *n*</span>
 
 Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the advice bit upper bound from [Lemma 2](#lemma2), we have that for almost all *n* the number of advice bits *p* satisfies: 
-- *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
+- *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
 - *p < log(2^(n+1) / (n+1)) + O(1) + \|enc(n)\| + \|enc(p)\| - n* 
 - *p < (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
 - *p < O(1) + O(log(log(n))) + \|enc(p)\|*
@@ -77,7 +94,7 @@ Unfortunately, this proof doesn't provide better bounds for "traditional" *n*-st
 
 An interesting conclusion is that all but *O(log(n))* programs of length *n+1* halt before *BB(n)* -- that is, *doesThisManyHalt* with *n* total bits runs longer than all but the last *2<sup>O(log(log(n)))</sup>* programs of length *n+1*. So, incrementing *n* only adds a relatively small number of "interesting" programs (i.e. programs of length *n+1* that run longer than *BB(n)*). This goes against my intuition that things ought to get "exponentially more interesting" as program lengths increase.
 
-It would be worth investigating the cases where the inequality in [lemma (1)](#lemma1) doesn't hold -- while we can construct a language where "only" almost all *n* satisfy it,[^5] I suspect that for any sensible language the result does indeed hold for all *n*. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters? 
+It would be worth investigating the cases where the inequality in [lemma (1)](#lemma1) doesn't hold -- while we can construct a language where "only" almost all *n* satisfy it,[^6] I suspect that for any sensible language the result does indeed hold for all *n*. Whether this is true, and what exactly "sensible" means, aren't obvious. Perhaps something involving languages that have minimally-sized interpreters? 
 
 This bound could also potentially be improved, since the unconditional Kolmogorov complexity of *BB(n)* is *n*. The sum of *(x log(x))<sup>-1</sup>* diverges, as does *(x log(x) log(log(x)))<sup>-1</sup>* and so on, so there might be a proof of this tighter bound on *H<sub>n</sub>*. This could be enough to completely equal *\|enc(n)\|*, getting the number of advice bits to a constant. To do that in this proof, though, we'd have to show that a convergent subset of *any* decreasing divergent series has asymptotic density 0, which seems to only have been proven[^4] for the harmonic series.
 
@@ -91,7 +108,8 @@ Revised 2025-03-17 with the bound *O(log(log(n)))*.
 [^2]: G. Chaitin. To a mathematical theory of evolution and biological creativity. Technical Report 391, Centre for Discrete Mathematics and Theoretical Computer Science, 2010. <https://www.cs.auckland.ac.nz/research/groups/CDMTCS/researchreports/391greg.pdf>.
 [^3]: Radó, Tibor (May 1962). "On non-computable functions". Bell System Technical Journal. 41 (3): 877–884. <https://en.wikipedia.org/wiki/Busy_beaver>
 [^4]: Lubeck, Brian & Ponomarenko, Vadim. (2018). [Subsums of the Harmonic Series](https://vadim.sdsu.edu/lp.pdf). The American Mathematical Monthly. 125. 351-355. 10.1080/00029890.2018.1420996. 
-[^5]: Consider the prefix-free language which is defined: 
+[^5]: If the candidate is too small, it is left-padded with zeroes to ensure this equality holds.
+[^6]: Consider the prefix-free language which is defined: 
     - If the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc).
     - If the first bit is a one, continue reading the input until you reach a zero. Set *b* to be the number of initial ones read. Read *2<sup>2<sup>b</sup></sup> - b - 1* bits after the first zero (for a total of *2<sup>2<sup>b</sup></sup>* bits), then halt.
     
