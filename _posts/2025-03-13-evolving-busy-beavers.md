@@ -32,7 +32,7 @@ The definition of Chaitin's constant *Ω* is, for all halting programs *p*, *Ω 
 
 So, Chaitin's constant is greater than or equal to some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. ∎
 
-#### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB(n+1)* from *BB(n)* and a number of advice bits, *p*, such that *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
+#### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB(n+1)* from *BB(n)* and a number of advice bits, *p*, such that *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
 Consider the following pseudocode:
 
@@ -63,6 +63,8 @@ __Estimating H<sub>n+1</sub>:__ Suppose we know *BB(n)*. Because *doesThisManyHa
 - Run *doesThisManyHalt* with inputs *candidate* and *p*. Use *BB(n)* to determine if it halts.
 - If *doesThisManyHalt* halts, *H<sub>n+1</sub> >= candidate \* 2<sup>p</sup>*. Increment *candidate* by one. If that pushes the total length (program and inputs) over *n*, reset *candidate* to zero and increment *p* instead. Return to the previous step.
 - If *doesThisManyHalt* does not halt, *H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*.
+
+Because the input *p* is adjustable rather than hard-coded, *candidate \* 2<sup>p</sup>* can get to the worst-case upper bound of*H<sub>n+1</sub>* -- *2<sup>n+1</sup>* -- with only *O(log(n))* bits of *p*. So, for all *n*, we will eventually find inputs such that *doesThisManyHalt* does not halt.
 
 Take *candidate* and *p* of the run that did not halt. Any run where *p* is incremented resets *candidate* to zero, so the difference between the non-halting run and the halting run just before it must be due to *candidate* being incremented (if *p* were incremented, the candidate for the non-halting run would be zero, so the run would have halted, a contradiction). So, the inputs for the last halting run must have been *candidate-1* and *p*. This gives us *(candidate - 1) \* 2<sup>p</sup> <= H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*, giving us *H<sub>n+1</sub>* within *p* bits of precision.
 
