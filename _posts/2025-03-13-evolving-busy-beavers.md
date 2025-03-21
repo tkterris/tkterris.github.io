@@ -92,9 +92,15 @@ If these *p'* bits are provided as advice bits, we will have the exact value of 
 __Upper bounds on *p'*:__ Recall from "Inputs and total program size" that:
 - *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
-TODO this paragraph is gibberish
+We can infer that either *p' = 0* (in which case we have a precise value for *H<sub>n+1</sub>* and can determine *BB<sub>L</sub>(n+1)*) or *read bits = log(candidate') + 1*.
 
-With the non-halting *p* and *candidate*, we can infer that *read bits = 1 + log(candidate)* exactly, with no padding. Assume otherwise for the sake of contradiction. We can infer that *p > 0* (otherwise we'd have *H<sub>n+1</sub>* precisely, immediately giving us *BB<sub>L</sub>(n+1)*). A run with *p-1* and either *candidate \* 2* or *candidate \* 2 - 1* would not have halted either. However, both of those options use at most one extra bit than running with the winning *p* and *candidate* (since *\|enc(x)\| > \|enc(x-1)\|* for all *x*, and *candidate \* 2* one bit longer than *candidate*). The extra bit of padding with *p* and *candidate* would have allowed for that higher-precision run with *p-1* and either *candidate \* 2* or *candidate \* 2 - 1*, and they both would have been run before (*p*, *candidate*) because *p* is only increased during the process of estimating *H<sub>n+1</sub>*. So, *n* and *candidate* couldn't have been the first inputs such that *doesThisManyHalt* did not halt, a contradiction.
+- For sake of contradiction, assume otherwise: *p' > 0* and *read bits > log(candidate') + 1*. For this to be true, there would need to be at least one bit of padding in front of *candidate'*. Recall also that *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*. 
+- *\|enc(p')\| >= \|enc(p'-1)\|*, and both *candidate' \* 2* and *candidate' \* 2 - 1* require one additional bit than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with one less bit of padding. 
+- At least one of these inputs would have resulted in non-halting *doesThisManyHalt*:
+  - If *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < (candidate' - 1/2) \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2 - 1* would not have halted
+  - If *(candidate' - 1/2) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2* would not have halted
+  - *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*, so one of the two sets of inputs would have caused *doesThisManyHalt* not to have halted
+- However, the runs of *doesThisManyHalt* are ordered by ascending *p*, exhausting all possible values of *candidate* that can fit into the remaining bits. The inputs *n'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* both could have been tried since the program length would have been at most *n*, and those attempts would have occurred before the one with *p'* and *candidate'* because *p'-1 < p'*. One of them would have been found to not halt, resulting in a different value for *n'* and *candidate'*. A contradiction.
 
 So:
 - *log(candidate') >= n - O(1) - \|enc(n)\| - \|enc(p')\|*
