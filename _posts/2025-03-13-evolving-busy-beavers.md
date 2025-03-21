@@ -1,5 +1,5 @@
 ---
-modified_date: 2025-03-20
+modified_date: 2025-03-21
 ---
 # Deriving BB(n+1) from BB(n) with O(log(log(n))) advice bits
 
@@ -17,13 +17,17 @@ More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n
 
 ##### A note about the language *L*
 
-The "traditional" Busy Beaver game envisioned by Radó [^3] involves *n*-state, two-symbol Turing machines. In this post we will be considering the equivalent function for *n*-bit programs in a prefix-free, universal, and __self-delimited__ language *L*. Programs in a self-delimited language have access to a *read-bit*[^7] primitive function that consumes a single bit from a stream. "Program length" is the sum of the prefix-free "*L*-expression" plus "read bits", the number of times *read-bit* is called. This has a number of implications, though the two most relevant for this proof are:
-- We don't have to enforce any requirements about the features or behavior of *L*, other than that it is prefix-free, universal, and self-delimited. 
-  - This is because any other prefix-free and universal (not necessarily self-delimited) language *L2* could be run by *L* with a constant bit overhead (dependent on *L* and *L2*). The overhead comes from the length of an *L* expression acting as an *L2*-interpreter, with the subsequent bitstring being in *L2* and passed into the *L2*-interpreter as read bits.
-- We can only determine the length of a program in *L* by running that program. That is, the length of the *L*-expression alone can be determined based on the grammar of *L*, but to get the program length -- *L*-expression plus read bits -- we need to see how many times it calls *read-bit*. 
-  - In particular: a program *p* with total length *m* will produce the same exact result in *L* if we take the *m+1* bitstring consisting of *p* with a single random bit appended. So, if we want to count how many programs of a certain size halt, we can't just run all bitstrings of that length in *L* and count them, otherwise we'll double-count shorter programs with irrelevant bits appended.
+The "traditional" Busy Beaver game envisioned by Radó [^3] involves *n*-state, two-symbol Turing machines. In this post we will be considering the equivalent function for *n*-bit programs in a prefix-free, universal, and __Chaitin-universal__ language *L*. Chaitin-universal languages can accept programs in any other prefix-free language *L2*, with an *O(1)* overhead for a prefix-free *L2*-interpreter. As described by Stay[^9]: 
 
-While this does differ from Theorem 20[^1] (which covers "standard prefix-free universal" languages), I'm adding the self-delimited constraint for a few reasons: (1) it matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html); (2) as mentioned above, it lets us add arbitrary properties to *L* with only a constant overhead; and (3) it makes the arithmetic in Lemma 2 much less tedious.
+> It is helpful to consider a \[Chaitin-universal\] machine in Shannon’s original sender-pipe-receiver model. Borrowing terminology from concurrent programming, the pipe is a shared resource. The input to the machine is held by the sender, a producer. The sender tries to put its bits into the pipe; it blocks if there are more bits to send and the pipe is full. When there are no more bits to send, the sender halts. The \[Chaitin-universal\] machine is the receiver, a consumer. From time to time it tries to get bits out of the pipe, and blocks if the pipe is empty. The entire computation is said to halt if the sender halts, the \[Chaitin-universal\] machine halts, and the pipe is empty.
+
+Following this description, and the construction of Chaitin's LISP[^7], we give programs in a Chaitin-universal language access to a *read-bit* primitive function that consumes a single bit from the pipe. "Program length" is the sum of the prefix-free "*L*-expression" plus "read bits", the number of times *read-bit* is called. This has a number of implications, though the two most relevant for this proof are:
+- We don't have to enforce any requirements about the features or behavior of *L*, other than that it is prefix-free, universal, and Chaitin-universal. 
+  - This is because programs in any other prefix-free (not necessarily universal) language *L2* would be accepted by *L* with a constant bit overhead (dependent on *L* and *L2*). The overhead comes from the length of an *L* expression acting as an *L2*-interpreter, with the subsequent bitstring being in *L2* and passed into the *L2*-interpreter via *read-bit*.
+- We can only determine the length of a program in *L* by running that program. That is, the length of the *L*-expression alone can be determined based on the grammar of *L*, but to get the program length -- *L*-expression plus read bits -- we need to see how many times it calls *read-bit*. 
+  - In particular: a program *p* with total length *m* will produce the same exact result in *L* if we take the *m+1* bitstring consisting of *p* with a single random bit appended. So, if we want to count how many programs of a certain size halt, we can't just run all bitstrings of that length in *L* and count them, otherwise we'll count shorter programs with irrelevant bits appended, breaking the prefix-free constraint.
+
+While this does differ from Theorem 20[^1] (which covers "standard prefix-free universal" languages), I'm adding the Chaitin-universal constraint for a few reasons: (1) it matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html); (2) as mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead; and (3) it makes the arithmetic in Lemma 2 much less tedious.
 
 Examples of languages meeting this property are Chaitin's LISP[^7], Binary Lambda Calculus[^8], and Keraia[^9].
 
@@ -58,7 +62,7 @@ The binary representation of *candidate* is left-padded with zeroes to ensure th
 
 __Program logic:__ First, the number of candidate bits is inferred by subtracting from *n* the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs *n* and *p*. It reads in the candidate bits as a binary number, and stores that number as *candidate*. The special case where *candidate = 0* is checked, and immediately halts if so. It then iterates through each of the *2<sup>n+1</sup>* strings of length *n+1*, emulating them as *L*-programs in parallel. Whenever one of the programs halts with total size *n+1* bits (both *L*-expression and read bits), it is added to a tally *halted*. If that tally reaches *candidate* multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
 
-Recall that halting self-delimiting programs still halt if they have additional bits appended. This would lead to counting shorter programs multiple times, when we don't want to count them at all. So, the *L*-program emulator in *doesThisManyHalt* must track how often *read_bit* is called, so that only those that halt with a total size of *n+1* bits are added to the tally. Similarly, if a program tries to call *read_bit* enough times that its total length would exceed *n+1* bits, the emulator should treat that as a non-halting program. These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
+Recall that halting prefix-free programs still halt if they have additional bits appended, and for Chaitin-universal languages we cannot tell how many bits are read without running the *L*-expression. If we're not careful, this would lead to counting shorter programs *and* all extensions of such programs, breaking the prefix-free requirement. So, the *L*-program emulator in *doesThisManyHalt* must track how often *read_bit* is called, so that only those that halt with a total size of *n+1* bits are added to the tally. Similarly, if a program tries to call *read_bit* enough times that its total length would exceed *n+1* bits, the emulator should treat that as a non-halting program. These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
 
 __Estimating H<sub>n+1</sub>:__ Suppose we know *BB(n)*. Because *doesThisManyHalt* plus its inputs are a length *n* *L*-program, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB(n)*: 
 - Start with *candidate = 0* and *p = 0*.
@@ -115,7 +119,7 @@ While it is shown[^4] that a convergent subseries of the harmonic series must ha
 
 TODO: rephrase this last paragraph
 
-This seems implausible for any sensible language, but because *L* is universal, prefix-free, and self-delimiting, the design space of *L* includes all possible languages (with *O(1)* overhead for an interpreter). Eventually, after that *O(1)* overhead, such pathological examples will contribute to the tally of *H<sub>n+1</sub>*. Similarly, examples that break the "almost all" condition for *O(log(log(n)))* advice bits, such as [^6], will eventually appear with constant overhead.
+This seems implausible for any sensible language, but because *L* is Chaitin-universal, the design space of *L* includes all possible prefix-free languages (with *O(1)* overhead for an interpreter). Eventually, after that *O(1)* overhead, such pathological examples will contribute to the tally of *H<sub>n+1</sub>*. Similarly, examples that break the "almost all" condition for *O(log(log(n)))* advice bits, such as [^6], will eventually appear with constant overhead.
 
 ---
 
