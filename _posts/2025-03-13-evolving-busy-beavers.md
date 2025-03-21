@@ -44,7 +44,11 @@ There are a number of different Busy Beaver variants:
 1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input.
 1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Referred to in Frontier as *BB'<sub>L</sub>(n)*.
 
-This paper will use variant (3), *BB<sub>L</sub>(n)*. Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). It has been observed by Chaitin[^13] that these two variants are equivalent within *O(1)*, that is, *BB<sub>L</sub>(n) <= Σ<sub>L</sub>(n + O(1))*. So, the bounds of this proof hold if you prefer variant (4). 
+This paper will use variant (3), *BB<sub>L</sub>(n)*. 
+
+Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). It has been observed by Chaitin[^13] that these two variants are equivalent within *O(1)*, that is, *BB<sub>L</sub>(n) <= Σ<sub>L</sub>(n + O(1))*. This can be shown with a constant-length *L* interpreter that runs a program in *L*, and returns the program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n + c)* is at least as large as *BB<sub>L</sub>(n)*.
+
+There is a brief digression in [Lemma (2)](#lemma2), highlighting the necessary *O(1)* change needed if *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*. This change does not affect the *O(log log n)* bounds of the proof.
 
 ---
 
@@ -117,6 +121,8 @@ To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1
 - *p' = (bits of H<sub>n+1</sub>) - (bits of candidate')*
 - *p' = log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
 - *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
+
+TODO: digression about sigma
 
 __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use similar procedures (estimating *H<sub>n+1</sub>* or *Ω<sub>n+1</sub>* through iterated runs, tallying halting machines), this Lemma required significantly more paperwork than Theorem 20. This is because Theorem 20 was proving that the advice bits needed were *O(log n)*, but the savings from Lemma 1 provide *exactly* *log n* advice bits. Rather than encoding both *n* and the candidate bitstring in a prefix-free way, which would have simplified the reasoning, we could only get away with encoding a single one of these. 
 
