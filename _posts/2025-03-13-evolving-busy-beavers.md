@@ -145,6 +145,8 @@ While it is shown[^4] that a convergent subseries of the harmonic series must ha
 
 While this seems implausible for any sensible language, *L* has self-delimiting input. Therefore, the design space of *L* includes all possible prefix-free languages, with *O(1)* overhead for an interpreter. Pathological languages that fit the above description will contribute to the tally of *H<sub>n+1</sub>*, once *n* is large enough to fit the interpreter for those languages. Similarly, languages where there exist *n* such that *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) > O(log log n)*, such as in [Appendix B](#appendixB), will contribute as well -- though, per Lemma 1, the asymptotic density of such *n* will be zero.
 
+This would imply that if it's possible to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* with much less than *O(log log n)* advice bits, it would require some other method than the one described here.
+
 ---
 
 ## Appendix
