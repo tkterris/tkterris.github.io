@@ -66,18 +66,20 @@ The definition of Chaitin's constant *Ω* is, for all halting programs *p* in *L
 
 So, Chaitin's constant is greater than or equal to some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. ∎
 
-#### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* and a number of advice bits, *p*, such that *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
+#### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* and a number of advice bits, *p*, such that *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
 The procedure we demonstrate will be similar to that described in Theorem 20[^1], except with testing approximations of *H<sub>n+1</sub>* rather than approximations of Chaitin's constant. The other primary difference will be a parameter *p*, which will encode the imprecision in our candidate for *H<sub>n+1</sub>*. We describe an *L*-program *doesThisManyHalt* (pseudocode in [Appendix A](#appendixA)). In the procedure below, we run this program multiple times, varying the inputs each time. By using *BB<sub>L</sub>(n)* to evaluate whether the program halts on any particular set of inputs, we will be able to arrive at an estimate for *H<sub>n+1</sub>* with *p* bits of lost precision.
 
 __Inputs and total program size:__ *doesThisManyHalt* consists of its constant-length program definition with two prefix-free inputs appended. Those inputs are *n* (the length of the known *BB<sub>L</sub>(n)*) and *p* (the amount of imprecision in our candidate estimate for *H<sub>n+1</sub>*). The remainder of the program string, evaluated via *read-bit* (rendered in the pseudocode as "*read_bit()*"), is the most significant digits of the candidate. These candidate digits are expressed as a simple binary integer rather than prefix-free, with the length inferred from the other inputs: 
-- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\|*
 
 The binary representation of *candidate* is left-padded with zeroes to ensure this equality holds, so *log(candidate) + 1 <= read bits*.
 
 __Program logic:__ First, the number of candidate bits is inferred by subtracting from *n* the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs *n* and *p*. It reads in the candidate bits as a binary number, and stores that number as *candidate*. The special case where *candidate = 0* is checked, and immediately halts if so. It then iterates through each of the *2<sup>n+1</sup>* strings of length *n+1*, emulating them as *L*-programs in parallel. Whenever one of the programs halts with total size *n+1* bits (both *L*-expression and read bits), it is added to a tally *halted*. If that tally reaches *candidate* multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
 
-Recall that halting prefix-free programs still halt if they have additional bits appended, and for languages with self-delimiting input we cannot tell how many bits are read without running the *L*-expression. If we're not careful, this would lead to counting extensions of much shorter programs, which aren't in *L* because *L* is prefix-free. So, the *L*-program emulator in *doesThisManyHalt* must track how often *read_bit* is called, so that only those that halt with a total size of *n+1* bits are added to the tally. Similarly, if a program tries to call *read_bit* enough times that its total length would exceed *n+1* bits, the emulator should treat that as a non-halting program. These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
+Recall that halting prefix-free programs still halt if they have additional bits appended, and for languages with self-delimiting input we cannot tell how many bits are read without running the *L*-expression. If we're not careful, this would lead to counting extensions of much shorter programs, which aren't in *L* because *L* is prefix-free. So, the *L*-program emulator in *doesThisManyHalt* must track how often *read-bit* is called, so that only those that halt with a total size of *n+1* bits are added to the tally. Similarly, if a program tries to call *read-bit* enough times that its total length would exceed *n+1* bits, then the *n+1* bit string is not in *L* (because either it's a non-halting program, or the string is a prefix of a longer, halting program) and should not be counted either.
+
+These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
 
 __Estimating H<sub>n+1</sub>:__ Suppose we know *BB<sub>L</sub>(n)*. Because *doesThisManyHalt* plus its inputs are a length *n* *L*-program, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB<sub>L</sub>(n)*: 
 - Start with *candidate = 0* and *p = 0*.
@@ -90,37 +92,38 @@ Because the input *p* is adjustable rather than hard-coded, *candidate\*2<sup>p<
 Any run where *p* is incremented resets *candidate* to zero, so the difference between the non-halting run and the halting run just before it must be due to *candidate* being incremented (if *p* were incremented, *candidate'* would be zero, so the run would have halted, a contradiction). So, the inputs for the last halting run must have been *candidate'-1* and *p'*. This gives us 
 - *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*
 
-giving us *H<sub>n+1</sub>* within *p'* bits of precision.
+giving us *H<sub>n+1</sub>* within *p'* bits of precision. 
 
-If these *p'* bits are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt with total program length *n+1* bits, and we can select the longest-running such program as *BB<sub>L</sub>(n+1)*.
+Specifically, there must exist an integer *k*, *0 <= k < 2<sup>p'</sup>*, such that *H<sub>n+1</sub> = (candidate' - 1) \* 2<sup>p'</sup> + k*. If these *p'* bits of *k* are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt with total program length *n+1* bits, and we can select the longest-running such program as *BB<sub>L</sub>(n+1)*.
 
 __Upper bounds on *p'*:__ Recall from "Inputs and total program size" that:
-- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\|*
 
 We can infer that either *p' = 0* (in which case we have a precise value for *H<sub>n+1</sub>* and can determine *BB<sub>L</sub>(n+1)*) or *read bits = log(candidate') + 1*.
 
 - For sake of contradiction, assume otherwise: *p' > 0* and *read bits > log(candidate') + 1*. For this to be true, there would need to be at least one bit of padding in front of *candidate'*. Recall also that *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*. 
-- *\|enc(p')\| >= \|enc(p'-1)\|*, and both *candidate' \* 2* and *candidate' \* 2 - 1* require one additional bit than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with one less bit of padding. 
+- *\|enc(p')\| >= \|enc(p'-1)\|*, and both *candidate' \* 2* and *candidate' \* 2 - 1* require at most one additional bit than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with at most one less bit of padding. 
 - At least one of these inputs would have resulted in non-halting *doesThisManyHalt*:
   - If *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < (candidate' - 1/2) \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2 - 1* would not have halted
   - If *(candidate' - 1/2) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2* would not have halted
   - *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*, so one of the two sets of inputs would have caused *doesThisManyHalt* not to have halted
 - However, the runs of *doesThisManyHalt* are ordered by ascending *p*, exhausting all possible values of *candidate* that can fit into the remaining bits. The inputs *n'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* both could have been tried since the program length would have been at most *n*, and those attempts would have occurred before the one with *p'* and *candidate'* because *p'-1 < p'*. One of them would have been found to not halt, resulting in a different value for *n'* and *candidate'*. A contradiction.
 
-So:
-- *log(candidate') >= n - O(1) - \|enc(n)\| - \|enc(p')\|*
+So if *p'* is nonzero:
+- *log(candidate') + 1 = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p')\|*
+- *log(candidate') = n - O(1) - \|enc(n)\| - \|enc(p')\|*
 
 To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1</sub>* in a non-prefix-free manner, and subtract the number of bits of *candidate'*:
 - *p' = (bits of H<sub>n+1</sub>) - (bits of candidate')*
-- *p' <= log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
-- *p' <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
+- *p' = log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
+- *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
 
 __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use similar procedures (estimating *H<sub>n+1</sub>* or *Ω<sub>n+1</sub>* through iterated runs, tallying halting machines), this Lemma required significantly more paperwork than Theorem 20. This is because Theorem 20 was proving that the advice bits needed were *O(log n)*, but the savings from Lemma 1 provide *exactly* *log n* advice bits. Rather than encoding both *n* and the candidate bitstring in a prefix-free way, which would have simplified the reasoning, we could only get away with encoding a single one of these. 
 
 #### <span id="theorem3">Theorem 3: Given *BB<sub>L</sub>(n)*, *BB<sub>L</sub>(n+1)* can be determined with *O(log(log(n)))* advice bits for almost all *n*</span>
 
 Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the advice bit upper bound from [Lemma 2](#lemma2), we have that for almost all *n* the number of advice bits *p* satisfies: 
-- *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
+- *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
 - *p < log(2^(n+1) / (n+1)) + O(1) + \|enc(n)\| + \|enc(p)\| - n* 
 - *p < (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
 - *p < O(1) + O(log(log(n))) + \|enc(p)\|*
@@ -138,7 +141,7 @@ An interesting conclusion is that all but *O(log(n)<sup>k</sup>)* programs of le
 
 [Lemma 1](#lemma1) lets us save *log(n)* bits due to the harmonic series diverging. But the series *(n log(n))<sup>-1</sup>* diverges as well, as does *(n log(n) log(log(n)))<sup>-1</sup>* and so on. Similarly, the Levenshtein coding of *n* uses *log(n) + log(log(n)) + ... + 2 + log\*(n)* bits (where *log\*(x)* is the [iterated logarithm](https://en.m.wikipedia.org/wiki/Iterated_logarithm) of *x*). So, it seems like we could use the repeated logarithms in the diverging series to save more bits from the encoding of *n*, as we see in [Theorem 3](#theorem3) with the first *log(n)* term. Could the method in [Lemma 2](#lemma2) perhaps do even better than we've shown? As it turns out, probably not.
 
-While it is shown[^4] that a convergent subseries of the harmonic series must have asymptotic density zero, the general case with a convergent subseries of any diverging series of monotonically-decreasing terms doesn't give such strict bounds. Šalát gives Theorem 2[^10] that for such convergent subseries, the density has *lim inf = 0*, and Theorem 1[^10] which includes an example where *lim sup* is nonzero. Nonzero *lim sup* but zero *lim inf* means that, for this to affect the needed advice bits in [Theorem 3](#theorem3) for more than asymptotic-density-zero *n*, the density of *n* where *H<sub>n+1</sub> >= 2<sup>n</sup>(n log(n))<sup>-1</sup>* would have to "jump around" between zero and some nonzero value as *n* tends towards infinity. 
+While it is shown[^4] that a convergent subseries of the harmonic series must have asymptotic density zero, the general case with a convergent subseries of any diverging series of monotonically-decreasing terms doesn't give such strict bounds. Šalát[^10] gives Theorem 2 that for such convergent subseries, the density has *lim inf = 0*, and Theorem 1 which includes an example where *lim sup* is nonzero. Nonzero *lim sup* but zero *lim inf* means that, for this to affect the needed advice bits in [Theorem 3](#theorem3) for more than asymptotic-density-zero *n*, the density of *n* where *H<sub>n+1</sub> >= 2<sup>n</sup>(n log(n))<sup>-1</sup>* would have to "jump around" between zero and some nonzero value as *n* tends towards infinity. 
 
 While this seems implausible for any sensible language, *L* has self-delimiting input. Therefore, the design space of *L* includes all possible prefix-free languages, with *O(1)* overhead for an interpreter. Pathological languages that fit the above description will contribute to the tally of *H<sub>n+1</sub>*, once *n* is large enough to fit the interpreter for those languages. Similarly, languages where there exist *n* such that *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) > O(log log n)*, such as in [Appendix B](#appendixB), will contribute as well -- though, per Lemma 1, the asymptotic density of such *n* will be zero.
 
