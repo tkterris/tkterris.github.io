@@ -17,7 +17,7 @@ More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n
 
 ##### A note about the language *L*
 
-The language *L* in this proof is prefix-free, universal, with __self-delimiting input__. Languages with self-delimiting input can accept programs in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This follows the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem), and languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
+The language *L* in this proof is prefix-free, universal, with __self-delimiting input__. Languages with self-delimiting input can accept programs in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. Languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
 
 > It is helpful to consider a Chaitin machine in Shannon’s original sender-pipe-receiver model. Borrowing terminology from concurrent programming, the pipe is a shared resource. The input to the machine is held by the sender, a producer. The sender tries to put its bits into the pipe; it blocks if there are more bits to send and the pipe is full. When there are no more bits to send, the sender halts. The Chaitin machine is the receiver, a consumer. From time to time it tries to get bits out of the pipe, and blocks if the pipe is empty. The entire computation is said to halt if the sender halts, the Chaitin machine halts, and the pipe is empty.
 
@@ -27,7 +27,12 @@ Following this description, and the construction of Chaitin's LISP[^7], we give 
 - We can only determine the length of a program in *L* by running that program. That is, the length of the *L*-expression alone can be determined based on the grammar of *L*, but to get the program length -- *L*-expression plus read bits -- we need to see how many times it calls *read-bit*. 
   - For example: take a string *s* with total length *m* that consists of an *L*-expression plus zero or more bits appended. *s* might be an incomplete prefix to a larger program (in which case it's not in *L*), a shorter program prefixed to some unnecessary bits (which is not in *L* because *L* is prefix-free), or a complete program in *L* of length *m*. To know for sure, we'd have to evaluate the *L*-expression and count the number of times it calls *read-bit*.
 
-While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a few reasons: (1) it matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html); (2) as mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead; (3) it lets us ignore (with *O(1)* overhead) the distinction between Busy Beaver variants, discussed below; and (4) it makes the arithmetic in Lemma 2 much less tedious.
+While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a number of reasons:
+- It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html)
+- As mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
+- It expands the scope of the Busy Beaver function to include both programs and inputs, making it "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem)
+- It lets us ignore (with *O(1)* overhead) the distinction between Busy Beaver variants, discussed below
+- It makes the arithmetic in Lemma 2 much less tedious
 
 Examples of languages that have this property are Chaitin's LISP[^7], Binary Lambda Calculus[^8], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine, where one of the tapes is a read-only unidirectional "input" tape.
 
