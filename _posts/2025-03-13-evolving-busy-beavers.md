@@ -1,7 +1,7 @@
 ---
 modified_date: 2025-03-21
 ---
-# Deriving BB<sub>L</sub>(n+1) from BB<sub>L</sub>(n) with O(log(log(n))) advice bits
+# Deriving BB_L(n+1) from BB_L(n) with O(log log n) advice bits
 
 ## Introduction
 
@@ -17,7 +17,7 @@ More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n
 
 ##### A note about the language *L*
 
-The language *L* in this proof is prefix-free, universal, with __self-delimiting input__. Languages with self-delimiting input can accept programs in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This feature follows the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem), and has also been referred to as a "Chaitin machine"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
+The language *L* in this proof is prefix-free, universal, with __self-delimiting input__. Languages with self-delimiting input can accept programs in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This follows the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem), and languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
 
 > It is helpful to consider a Chaitin machine in Shannon’s original sender-pipe-receiver model. Borrowing terminology from concurrent programming, the pipe is a shared resource. The input to the machine is held by the sender, a producer. The sender tries to put its bits into the pipe; it blocks if there are more bits to send and the pipe is full. When there are no more bits to send, the sender halts. The Chaitin machine is the receiver, a consumer. From time to time it tries to get bits out of the pipe, and blocks if the pipe is empty. The entire computation is said to halt if the sender halts, the Chaitin machine halts, and the pipe is empty.
 
@@ -25,9 +25,9 @@ Following this description, and the construction of Chaitin's LISP[^7], we give 
 - We don't have to enforce any requirements about the features or behavior of *L*, other than that it is prefix-free, universal, and has self-delimiting input. 
   - This is because strings in any prefix-free language *L2* would be accepted by *L* with a constant bit overhead (dependent on *L* and *L2*) from the *L2*-interpreter. If there's some feature we need, we can assume that the feature is given in *L2*, which means that *L* plus constant overhead also has that feature via the *L2*-interpreter.
 - We can only determine the length of a program in *L* by running that program. That is, the length of the *L*-expression alone can be determined based on the grammar of *L*, but to get the program length -- *L*-expression plus read bits -- we need to see how many times it calls *read-bit*. 
-  - In particular: take a string *s* with total length *m* that consists of an *L*-expression plus zero or more bits appended. *s* might be an incomplete prefix to a larger program (in which case it's not in *L*), a shorter program prefixed to some unnecessary bits (which is not in *L* because *L* is prefix-free), or a complete program in *L* of length *m*. To know for sure, we'd have to evaluate the *L*-expression and count the number of times it calls *read-bit*.
+  - For example: take a string *s* with total length *m* that consists of an *L*-expression plus zero or more bits appended. *s* might be an incomplete prefix to a larger program (in which case it's not in *L*), a shorter program prefixed to some unnecessary bits (which is not in *L* because *L* is prefix-free), or a complete program in *L* of length *m*. To know for sure, we'd have to evaluate the *L*-expression and count the number of times it calls *read-bit*.
 
-While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a few reasons: (1) it matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html); (2) as mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead; (3) it lets us ignore (with *O(1)* overhead) the existence Busy Beaver variants, discussed below; and (4) it makes the arithmetic in Lemma 2 much less tedious.
+While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a few reasons: (1) it matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html); (2) as mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead; (3) it lets us ignore (with *O(1)* overhead) the distinction between Busy Beaver variants, discussed below; and (4) it makes the arithmetic in Lemma 2 much less tedious.
 
 Examples of languages that have this property are Chaitin's LISP[^7], Binary Lambda Calculus[^8], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine, where one of the tapes is a read-only unidirectional "input" tape.
 
@@ -39,7 +39,7 @@ There are a number of different Busy Beaver variants:
 1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input.
 1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Referred to in Frontier as *BB'<sub>L</sub>(n)*.
 
-This paper will use variant (3), *BB<sub>L</sub>(n)*. Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). It has been observed by Chaitin[^13] that these two variants are equivalent within *O(1)*, that is, *BB<sub>L</sub>(n + O(1)) <= Σ<sub>L</sub>(n)*. So, the bounds of this proof hold if you prefer variant (4). 
+This paper will use variant (3), *BB<sub>L</sub>(n)*. Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). It has been observed by Chaitin[^13] that these two variants are equivalent within *O(1)*, that is, *BB<sub>L</sub>(n) <= Σ<sub>L</sub>(n + O(1))*. So, the bounds of this proof hold if you prefer variant (4). 
 
 ---
 
@@ -63,7 +63,7 @@ So, Chaitin's constant is greater than or equal to some subset of the harmonic s
 
 #### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* and a number of advice bits, *p*, such that *p <= log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
-The procedure we demonstrate will be similar to that described in Theorem 20[^1], except with testing approximations of *H<sub>n+1</sub>* rather than approximations of Chaitin's constant. The other primary difference will be a parameter *p*, which will encode the imprecision in our candidate for *H<sub>n+1</sub>*. We describe an *L*-program *doesThisManyHalt* (pseudocode in this footnote: [^11]). In the procedure below, we run this program multiple times, varying the inputs each time. By using *BB<sub>L</sub>(n)* to evaluate whether the program halts on any particular set of inputs, we will be able to arrive at an estimate for *H<sub>n+1</sub>* with *p* bits of lost precision.
+The procedure we demonstrate will be similar to that described in Theorem 20[^1], except with testing approximations of *H<sub>n+1</sub>* rather than approximations of Chaitin's constant. The other primary difference will be a parameter *p*, which will encode the imprecision in our candidate for *H<sub>n+1</sub>*. We describe an *L*-program *doesThisManyHalt* (pseudocode in [Appendix A](#appendixA)). In the procedure below, we run this program multiple times, varying the inputs each time. By using *BB<sub>L</sub>(n)* to evaluate whether the program halts on any particular set of inputs, we will be able to arrive at an estimate for *H<sub>n+1</sub>* with *p* bits of lost precision.
 
 __Inputs and total program size:__ *doesThisManyHalt* consists of its constant-length program definition with two prefix-free inputs appended. Those inputs are *n* (the length of the known *BB<sub>L</sub>(n)*) and *p* (the amount of imprecision in our candidate estimate for *H<sub>n+1</sub>*). The remainder of the program string, evaluated via *read-bit* (rendered in the pseudocode as "*read_bit()*"), is the most significant digits of the candidate. These candidate digits are expressed as a simple binary integer rather than prefix-free, with the length inferred from the other inputs: 
 - *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
@@ -135,11 +135,51 @@ An interesting conclusion is that all but *O(log(n)<sup>k</sup>)* programs of le
 
 While it is shown[^4] that a convergent subseries of the harmonic series must have asymptotic density zero, the general case with a convergent subseries of any diverging series of monotonically-decreasing terms doesn't give such strict bounds. Šalát gives Theorem 2[^10] that for such convergent subseries, the density has *lim inf = 0*, and Theorem 1[^10] which includes an example where *lim sup* is nonzero. Nonzero *lim sup* but zero *lim inf* means that, for this to affect the needed advice bits in [Theorem 3](#theorem3) for more than asymptotic-density-zero *n*, the density of *n* where *H<sub>n+1</sub> >= 2<sup>n</sup>(n log(n))<sup>-1</sup>* would have to "jump around" between zero and some nonzero value as *n* tends towards infinity. 
 
-While this seems implausible for any sensible language, *L* has self-delimiting input. Therefore, the design space of *L* includes all possible prefix-free languages, with *O(1)* overhead for an interpreter. Pathological languages that fit the above description will contribute to the tally of *H<sub>n+1</sub>*, once *n* is large enough to fit the interpreter for those languages. Similarly, languages where there exist *n* such that *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) > O(log log n)*, such as [^6], will contribute as well -- though, per Lemma 1, the asymptotic density of such *n* will be zero.
+While this seems implausible for any sensible language, *L* has self-delimiting input. Therefore, the design space of *L* includes all possible prefix-free languages, with *O(1)* overhead for an interpreter. Pathological languages that fit the above description will contribute to the tally of *H<sub>n+1</sub>*, once *n* is large enough to fit the interpreter for those languages. Similarly, languages where there exist *n* such that *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) > O(log log n)*, such as in [Appendix B](#appendixB), will contribute as well -- though, per Lemma 1, the asymptotic density of such *n* will be zero.
 
 ---
 
-Revised 2025-03-17 with the bound *O(log(log(n)))*. 
+## Appendix
+
+#### <span id="appendixA">Appendix A: Pseudocode for *doesThisManyHalt*</span>
+
+```
+doesThisManyHalt(int n, int p) {
+    int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)|;
+    int candidate = 0;
+    int bitsRead = 0;
+    while (bitsRead < bitsToRead) {
+        candidate = candidate * 2 + read_bit();
+        bitsRead++;
+    }
+    if (candidate == 0) {
+        exit;
+    }
+    int halted = 0;
+    getAllProgramsOfLength(n + 1).runInParallel().whenHalt(program -> {
+        if (program.expression_length + program.read_bits == n+1) {
+            halted++;
+            if (halted >= candidate * 2 ^ p) {
+                exit;
+            }
+        }
+    });
+}
+```
+
+#### <span id="appendixB">Appendix B: A language with some *n* such that *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) > O(log log n)*</span>
+
+Consider the prefix-free language which is defined: 
+- If the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc).
+- If the first bit is a one, continue reading the input until you reach a zero. Set *b* to be the number of initial ones read. Read *2<sup>2<sup>b</sup></sup> - b - 1* bits after the first zero (for a total of *2<sup>2<sup>b</sup></sup>* bits), then halt.
+
+In this case, for all *n* that can be expressed as *2<sup>2<sup>b</sup></sup>* for an integer *b*, the number of bits needed to count *H<sub>n</sub>* is at least:
+- *bits = log(H<sub>n</sub>) + 1*
+- *bits >= log(2^(2<sup>2<sup>b</sup></sup> - b - 1)) + 1*
+- *bits >= 2<sup>2<sup>b</sup></sup> - b - 1 + 1*
+- *bits >= n - log(log(n))*
+
+which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll need *O(log(n))* advice bits for infinitely many *n*. Specifically, for all *n* such that *n=2<sup>2<sup>b</sup></sup> + O(1)*, where the *O(1)* overhead is from the constant length of the interpreter for the above language for *L*. Such *n* occur with density *n<sup>-1</sup>log(log(n))*, which asymptotically approaches zero, so [Lemma (1)](#lemma1) still holds. 
 
 ---
 
@@ -153,40 +193,4 @@ Revised 2025-03-17 with the bound *O(log(log(n)))*.
 [^9]: Michael Stay. 2005. [Very Simple Chaitin Machines for Concrete AIT.](https://arxiv.org/pdf/cs/0508056) Fundam. Inf. 68, 3 (August 2005), 231–247.
 [^10]: Tibor Šalát. 1964. [On subseries.](https://resolver.sub.uni-goettingen.de/purl?PPN266833020_0085) Mathematische Zeitschrift, Volume 85, Number 3, 209-225.
 [^4]: Lubeck, Brian & Ponomarenko, Vadim. (2018). [Subsums of the Harmonic Series.](https://vadim.sdsu.edu/lp.pdf) The American Mathematical Monthly. 125. 351-355. 10.1080/00029890.2018.1420996. 
-[^11]: Pseudocode for *doesThisManyHalt*:
-    ```
-    doesThisManyHalt(int n, int p) {
-        int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)|;
-        int candidate = 0;
-        int bitsRead = 0;
-        while (bitsRead < bitsToRead) {
-            candidate = candidate * 2 + read_bit();
-            bitsRead++;
-        }
-        if (candidate == 0) {
-            exit;
-        }
-        int halted = 0;
-        getAllProgramsOfLength(n + 1).runInParallel().whenHalt(program -> {
-            if (program.expression_length + program.read_bits == n+1) {
-                halted++;
-                if (halted >= candidate * 2 ^ p) {
-                    exit;
-                }
-            }
-        });
-    }
-    ```
-
-[^6]: Consider the prefix-free language which is defined: 
-    - If the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc).
-    - If the first bit is a one, continue reading the input until you reach a zero. Set *b* to be the number of initial ones read. Read *2<sup>2<sup>b</sup></sup> - b - 1* bits after the first zero (for a total of *2<sup>2<sup>b</sup></sup>* bits), then halt.
-    
-    In this case, for all *n* that can be expressed as *2<sup>2<sup>b</sup></sup>* for an integer *b*, the number of bits needed to count *H<sub>n</sub>* is at least:
-    - *bits = log(H<sub>n</sub>) + 1*
-    - *bits >= log(2^(2<sup>2<sup>b</sup></sup> - b - 1)) + 1*
-    - *bits >= 2<sup>2<sup>b</sup></sup> - b - 1 + 1*
-    - *bits >= n - log(log(n))*
-    
-    which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll need *O(log(n))* advice bits for infinitely many *n*. Specifically, for all *n* such that *n=2<sup>2<sup>b</sup></sup> + O(1)*, where the *O(1)* overhead is from the constant length of the interpreter for the above language for *L*. Such *n* occur with density *n<sup>-1</sup>log(log(n))*, which asymptotically approaches zero, so [Lemma (1)](#lemma1) still holds. 
 
