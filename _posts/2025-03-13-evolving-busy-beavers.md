@@ -5,7 +5,7 @@ modified_date: 2025-03-21
 
 ## Introduction
 
-In section 5.5, Theorem 20 of The Busy Beaver Frontier[^1], Scott Aaronson describes proof 5.1 by Chaitin[^2] that implies that, for any universal prefix-free language *L*, *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) = O(log n)*, where *K(A\|B)* is the Kolmogorov complexity of *A* given the input string *B*. That is, if you know the *n*'th Busy Beaver, you could determine *BB<sub>L</sub>(n+1)* with *O(log n)* additional bits. At the end of the section, Aaronson poses the following question:
+In section 5.5, Theorem 20 of The Busy Beaver Frontier[^1], Scott Aaronson describes proof 5.1 by Chaitin[^2] that shows that, for any universal prefix-free language *L*, *K(BB<sub>L</sub>(n+1) \| BB<sub>L</sub>(n)) = O(log n)*, where *K(A\|B)* is the Kolmogorov complexity of *A* given the input string *B*. That is, if you know the *n*'th Busy Beaver, you could determine *BB<sub>L</sub>(n+1)* with *O(log n)* additional bits. At the end of the section, Aaronson poses the following question:
 
 > On the other hand, for bit-based programs, could Theorem 20 be improved to get the number of advice bits below O(log n)—possibly even down to a constant? How interrelated are the successive values of BB(n)?
 
@@ -31,24 +31,22 @@ While this does differ from Theorem 20 (which covers "standard prefix-free unive
 - It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html)
 - As mentioned above, it lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
 - It expands the scope of the Busy Beaver function to include both programs and inputs, making it "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem)
-- It lets us ignore (with *O(1)* overhead) the distinction between Busy Beaver variants, discussed below
+- It lets us mostly ignore (with *O(1)* overhead) the distinction between Busy Beaver variants, discussed below
 - It makes the arithmetic in Lemma 2 much less tedious
 
 Examples of languages that have this property are Chaitin's LISP[^7], Binary Lambda Calculus[^8], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine, where one of the tapes is a read-only unidirectional "input" tape.
 
 ##### A note about Busy Beaver variants
 
-There are a number of different Busy Beaver variants:
-1. *BB(n)*: the maximum number of shifts performed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. Radó[^3] originally named this function *S(n)* but *BB(n)* is much more commonly used, including in Frontier[^1]. 
+There are a number of different Busy Beaver variants. Here are some that are discussed in Frontier[^1]:
+1. *BB(n)*: the maximum number of shifts performed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. Radó[^3] originally named this function *S(n)* but *BB(n)* is much more commonly used, including in Frontier. 
 1. *Σ(n)*: the maximum number of ones printed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. This is the "traditional" Busy Beaver function envisioned by Radó[^3].
-1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input.
-1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Referred to in Frontier as *BB'<sub>L</sub>(n)*.
+1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB<sub>L</sub>(n)* in Frontier, without the self-delimiting input property.
+1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB'<sub>L</sub>(n)* in Frontier, without the self-delimiting input property.
 
 This paper will use variant (3), *BB<sub>L</sub>(n)*. 
 
-Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). It has been observed by Chaitin[^13] that these two variants are equivalent within *O(1)*, that is, *BB<sub>L</sub>(n) <= Σ<sub>L</sub>(n + O(1))*. This can be shown with a constant-length *L* interpreter that runs a program in *L*, and returns the program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n + c)* is at least as large as *BB<sub>L</sub>(n)*.
-
-There is a brief digression in [Lemma (2)](#lemma2), highlighting the necessary *O(1)* change needed if *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*. This change does not affect the *O(log log n)* bounds of the proof.
+Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). This variant also links Busy Beaver function to Kolmogorov complexity, where *Σ<sub>L</sub>(n)* is the largest integer whose Kolmogorov complexity is *n*. It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. If *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*, there are a few amendments needed to [Lemma (2)](#lemma2) to reflect this *O(1)* overhead. These changes are noted in the text after Lemma (2), and do not affect the *O(log log n)* bounds of the proof.
 
 ---
 
@@ -76,6 +74,7 @@ The procedure we demonstrate will be similar to that described in Theorem 20[^1]
 
 __Inputs and total program size:__ *doesThisManyHalt* consists of its constant-length program definition with two prefix-free inputs appended. Those inputs are *n* (the length of the known *BB<sub>L</sub>(n)*) and *p* (the amount of imprecision in our candidate estimate for *H<sub>n+1</sub>*). The remainder of the program string, evaluated via *read-bit* (rendered in the pseudocode as "*read_bit()*"), is the most significant digits of the candidate. These candidate digits are expressed as a simple binary integer rather than prefix-free, with the length inferred from the other inputs: 
 - *read bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
 The binary representation of *candidate* is left-padded with zeroes to ensure this equality holds, so *log(candidate) + 1 <= read bits*.
 
@@ -91,7 +90,7 @@ __Estimating H<sub>n+1</sub>:__ Suppose we know *BB<sub>L</sub>(n)*. Because *do
 - If *doesThisManyHalt* halts, *H<sub>n+1</sub> >= candidate \* 2<sup>p</sup>*. Increment *candidate* by one. If that pushes the total length (program and inputs) over *n*, reset *candidate* to zero and increment *p* instead. Return to the previous step.
 - If *doesThisManyHalt* does not halt, *H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*. Call the inputs to the first non-halting run *candidate'* and *p'*.
 
-Because the input *p* is adjustable rather than hard-coded, *candidate\*2<sup>p</sup>* can get to *2<sup>n+1</sup>*, the worst-case upper bound of *H<sub>n+1</sub>*, with only *O(log(n))* bits of *p*. That is, for all *n >= \|doesThisManyHalt\| + \|enc(n)\| + \|enc(n+1)\| + 1*, we will eventually find inputs such that *doesThisManyHalt* does not halt.
+Because the input *p* is adjustable rather than hard-coded, *candidate\*2<sup>p</sup>* can get to *2<sup>n+1</sup>*, the worst-case upper bound of *H<sub>n+1</sub>*, with only *O(log(n))* bits of *p*. That is, for all *n >= O(1) + \|enc(n)\| + \|enc(n+1)\|* (where *O(1)* includes a single bit for *candidate = 1*), we will eventually find inputs such that *doesThisManyHalt* does not halt.
 
 Any run where *p* is incremented resets *candidate* to zero, so the difference between the non-halting run and the halting run just before it must be due to *candidate* being incremented (if *p* were incremented, *candidate'* would be zero, so the run would have halted, a contradiction). So, the inputs for the last halting run must have been *candidate'-1* and *p'*. This gives us 
 - *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*
@@ -101,20 +100,20 @@ giving us *H<sub>n+1</sub>* within *p'* bits of precision.
 Specifically, there must exist an integer *k*, *0 <= k < 2<sup>p'</sup>*, such that *H<sub>n+1</sub> = (candidate' - 1) \* 2<sup>p'</sup> + k*. If these *p'* bits of *k* are provided as advice bits, we will have the exact value of *H<sub>n+1</sub>*. We can then run all programs of length *n+1* in parallel until that many halt with total program length *n+1* bits, and we can select the longest-running such program as *BB<sub>L</sub>(n+1)*.
 
 __Upper bounds on *p'*:__ Recall from "Inputs and total program size" that:
-- *read bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
 We can infer that either *p' = 0* (in which case we have a precise value for *H<sub>n+1</sub>* and can determine *BB<sub>L</sub>(n+1)*) or *read bits = log(candidate') + 1*.
 
 - For sake of contradiction, assume otherwise: *p' > 0* and *read bits > log(candidate') + 1*. For this to be true, there would need to be at least one bit of padding in front of *candidate'*. Recall also that *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*. 
-- *\|enc(p')\| >= \|enc(p'-1)\|*, and both *candidate' \* 2* and *candidate' \* 2 - 1* require at most one additional bit than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with at most one less bit of padding. 
+- Observe that *\|enc(p')\| >= \|enc(p'-1)\|* and both *candidate' \* 2* and *candidate' \* 2 - 1* are at most one bit longer than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with at most one less bit of padding. 
 - At least one of these inputs would have resulted in non-halting *doesThisManyHalt*:
   - If *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < (candidate' - 1/2) \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2 - 1* would not have halted
   - If *(candidate' - 1/2) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2* would not have halted
   - *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*, so one of the two sets of inputs would have caused *doesThisManyHalt* not to have halted
-- However, the runs of *doesThisManyHalt* are ordered by ascending *p*, exhausting all possible values of *candidate* that can fit into the remaining bits. The inputs *n'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* both could have been tried since the program length would have been at most *n*, and those attempts would have occurred before the one with *p'* and *candidate'* because *p'-1 < p'*. One of them would have been found to not halt, resulting in a different value for *n'* and *candidate'*. A contradiction.
+- However, the runs of *doesThisManyHalt* are ordered by ascending *p*, exhausting all possible values of *candidate* that can fit into the remaining bits. The inputs *n'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* both could have been tried since the program length would have been at most *n*, and those attempts would have occurred before the one with *p'* and *candidate'* because *p'-1 < p'*. One of them would have been found to not halt, resulting in different values for *n'* and *candidate'* than the ones found. A contradiction.
 
 So if *p'* is nonzero:
-- *log(candidate') + 1 = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p')\|*
+- *log(candidate') + 1 = n - O(1) - \|enc(n)\| - \|enc(p')\|*
 - *log(candidate') = n - O(1) - \|enc(n)\| - \|enc(p')\|*
 
 To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1</sub>* in a non-prefix-free manner, and subtract the number of bits of *candidate'*:
@@ -122,7 +121,13 @@ To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1
 - *p' = log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
 - *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
 
-TODO: digression about sigma
+__Amendments if *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*:__ Often, *Σ<sub>L</sub>(n)* is considered rather than *BB<sub>L</sub>(n)*. Recall that, while *BB<sub>L</sub>(n)* is the maximum *runtime* of halting *n*-bit programs in *L*, *Σ<sub>L</sub>(n)* is the largest integer produced by halting *n*-bit programs in *L*. As Chaitin[^13] observes, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. This can be shown with a constant-length *L* interpreter that runs a program in *L*, and returns the program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n)* is at least as large as *BB<sub>L</sub>(n-c)*. Since a function that is larger than *BB<sub>L</sub>(n-c)* can be used to compute *BB<sub>L</sub>(n-c)*, *Σ<sub>L</sub>(n)* gives us *BB<sub>L</sub>(n-c)*.
+
+To correct for this reduced *BB<sub>L</sub>(n-c)*, we use the same value for *n* as in the case when *BB<sub>L</sub>(n)* is known. However, we adjust the length of the *candidate* bits to be *c* bits shorter, so:
+- *read bits = n - \|doesThisManyHalt\| - c - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
+
+which gives the same (big-O) value for "read bits" as was found with *BB<sub>L</sub>(n)*. Similarly, we subtract *c* in the logic in *doesThisManyHalt* where we infer the number of bits to read, the amount of padding we add to *candidate*, and the point at which we reset *candidate* and increment *p* instead. *doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Finally, note that once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we determine *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the largest output (rather than the one with the longest runtime). The rest of the proof follows for *Σ<sub>L</sub>(n)*.
 
 __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use similar procedures (estimating *H<sub>n+1</sub>* or *Ω<sub>n+1</sub>* through iterated runs, tallying halting machines), this Lemma required significantly more paperwork than Theorem 20. This is because Theorem 20 was proving that the advice bits needed were *O(log n)*, but the savings from Lemma 1 provide *exactly* *log n* advice bits. Rather than encoding both *n* and the candidate bitstring in a prefix-free way, which would have simplified the reasoning, we could only get away with encoding a single one of these. 
 
@@ -131,9 +136,9 @@ __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use simi
 Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the advice bit upper bound from [Lemma 2](#lemma2), we have that for almost all *n* the number of advice bits *p* satisfies: 
 - *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
 - *p < log(2^(n+1) / (n+1)) + O(1) + \|enc(n)\| + \|enc(p)\| - n* 
-- *p < (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
-- *p < O(1) + O(log(log(n))) + \|enc(p)\|*
-- *p < O(log(log(n)))*  ∎
+- *p <= (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
+- *p <= O(1) + O(log(log(n))) + \|enc(p)\|*
+- *p <= O(log(log(n)))*  ∎
 
 ---
 
