@@ -13,7 +13,7 @@ In this paper, I give a proof that the required number of advice bits needed to 
 
 The intuitive reason why the proof provides better bounds than Theorem 20 comes from the fact that that Chaitin's constant is "overpowered" for determining whether a program halts. The first *n+1* bits of Chaitin's constant, *Ω<sub>n+1</sub>*, can determine the number of halting programs of length *n+1*, denoted *H<sub>n+1</sub>*, and therefore *BB<sub>L</sub>(n+1)*. However, *Ω<sub>n+1</sub>* also encodes information about much larger programs. *Ω<sub>n+1</sub>* tells you *H<sub>n+2</sub>* within a factor of 2, *H<sub>n+3</sub>* within a factor of 4, and so on. That's a lot to ask from just *BB<sub>L</sub>(n)*, requiring *O(log(n))* advice bits to make up the difference to generate *Ω<sub>n+1</sub>*. However, by focusing solely on *H<sub>n+1</sub>* rather than later values of *H*, we reduce the "level of effort". Usually, anyway -- if *H<sub>n+1</sub>* is very large, then that *does* tell you something about *H<sub>n+2</sub>* and so on (because the language is prefix-free, a large number of halting programs of length *n+1* "rules out" many longer programs), which means you would need those additional advice bits. However, it turns out that the asymptotic density over *n* of such large values of *H<sub>n+1</sub>* is 0.
 
-More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n+1</sub>)* is less than *n - log(n)*. [Lemma (2)](#lemma2) provides a method for determining *H<sub>n+1</sub>* with a number of advice bits that includes *log(H<sub>n+1</sub>)*, the prefix-free encoding of *n*, and *-n*. [Theorem (3)](#theorem3) then puts these two lemmas together: the *-log(n)* term from Lemma (1) cancels *log(n)* of the prefix-free encoding of *n* in Lemma (2), and the *n* term in Lemma (1) is canceled by the *-n* term in Lemma (2). This gets the bound on advice bits to *O(log(log(n)))* for almost all *n*.
+More precisely: [Lemma (1)](#lemma1) shows that for almost all *n*, *log(H<sub>n+1</sub>)* is less than *n - log(n)*. [Lemma (2)](#lemma2) provides a method for determining *H<sub>n+1</sub>* with a number of advice bits that includes *log(H<sub>n+1</sub>)*, the prefix-free encoding of *n*, and *-n*. [Theorem (3)](#theorem3) then puts these two lemmas together: the *-log(n)* term from Lemma (1) cancels *log(n)* of the prefix-free encoding of *n* in Lemma (2), and the *n* term in Lemma (1) is canceled by the *-n* term in Lemma (2). This gets the bound on advice bits to *O(log(log(n)))* for almost all *n*. Finally, [Corollary (4)](#corollary4) shows that this same bound on advice bits applies when using the Busy Beaver variant *Σ<sub>L</sub>(n)*, described below.
 
 ##### A note about the language *L*
 
@@ -40,13 +40,13 @@ Examples of languages that have this property are Chaitin's LISP[^7], Binary Lam
 
 There are a number of different Busy Beaver variants. Here are some that are discussed in Frontier[^1]:
 1. *BB(n)*: the maximum number of shifts performed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. Radó[^3] originally named this function *S(n)* but *BB(n)* is much more commonly used, including in Frontier. 
-1. *Σ(n)*: the maximum number of ones printed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. This is the "traditional" Busy Beaver function envisioned by Radó[^3].
-1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB<sub>L</sub>(n)* in Frontier, without the self-delimiting input property.
-1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB'<sub>L</sub>(n)* in Frontier, without the self-delimiting input property.
+1. *Σ(n)*: the maximum number of ones printed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. This is the "traditional" Busy Beaver function envisioned by Radó.
+1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB<sub>L</sub>(n)* in Frontier, plus the constraint that *L* have self-delimiting input.
+1. *Σ<sub>L</sub>(n)*: the maximum integer returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB'<sub>L</sub>(n)* in Frontier, plus the constraint that *L* have self-delimiting input.
 
-This paper will use variant (3), *BB<sub>L</sub>(n)*. 
+Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory. It does not depend on implementation details -- the "maximum runtime" could be CPU cycles, β-reductions in Lambda calculus, or any other notion of a "computational step" without affecting the actual value of *Σ<sub>L</sub>(n)*. This variant also links the Busy Beaver function to Kolmogorov complexity, where *Σ<sub>L</sub>(n)* is the largest integer whose Kolmogorov complexity is *n*. It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. 
 
-Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory, as it is bit-based like (3) and also not dependent on implementation details (e.g. reduction strategies, if *L* is based on lambda calculus). This variant also links Busy Beaver function to Kolmogorov complexity, where *Σ<sub>L</sub>(n)* is the largest integer whose Kolmogorov complexity is *n*. It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. If *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*, there are a few amendments needed to [Lemma (2)](#lemma2) to reflect this *O(1)* overhead. These changes are noted in the text after Lemma (2), and do not affect the *O(log log n)* bounds of the proof.
+This paper will use variant (3), *BB<sub>L</sub>(n)*, consistent with Frontier. If *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*, there are a few amendments needed to reflect this *O(1)* overhead. These changes are described in [Corollary (4)](#corollary4), and do not affect the *O(log log n)* bounds of the proof.
 
 ---
 
@@ -121,14 +121,6 @@ To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1
 - *p' = log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
 - *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
 
-__Amendments if *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*:__ Often, *Σ<sub>L</sub>(n)* is considered rather than *BB<sub>L</sub>(n)*. Recall that, while *BB<sub>L</sub>(n)* is the maximum *runtime* of halting *n*-bit programs in *L*, *Σ<sub>L</sub>(n)* is the largest integer produced by halting *n*-bit programs in *L*. As Chaitin[^13] observes, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. This can be shown with a constant-length *L* interpreter that runs a program in *L*, and returns the program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n)* is at least as large as *BB<sub>L</sub>(n-c)*. Since a function that is larger than *BB<sub>L</sub>(n-c)* can be used to compute *BB<sub>L</sub>(n-c)*, *Σ<sub>L</sub>(n)* gives us *BB<sub>L</sub>(n-c)*.
-
-To correct for this reduced *BB<sub>L</sub>(n-c)*, we use the same value for *n* as in the case when *BB<sub>L</sub>(n)* is known. However, we adjust the length of the *candidate* bits to be *c* bits shorter, so:
-- *read bits = n - \|doesThisManyHalt\| - c - \|enc(n)\| - \|enc(p)\|*
-- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
-
-which gives the same (big-O) value for "read bits" as was found with *BB<sub>L</sub>(n)*. Similarly, we subtract *c* in the logic in *doesThisManyHalt* where we infer the number of bits to read, the amount of padding we add to *candidate*, and the point at which we reset *candidate* and increment *p* instead. *doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Finally, note that once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we determine *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the largest output (rather than the one with the longest runtime). The rest of the proof follows for *Σ<sub>L</sub>(n)*.
-
 __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use similar procedures (estimating *H<sub>n+1</sub>* or *Ω<sub>n+1</sub>* through iterated runs, tallying halting machines), this Lemma required significantly more paperwork than Theorem 20. This is because Theorem 20 was proving that the advice bits needed were *O(log n)*, but the savings from Lemma 1 provide *exactly* *log n* advice bits. Rather than encoding both *n* and the candidate bitstring in a prefix-free way, which would have simplified the reasoning, we could only get away with encoding a single one of these. 
 
 #### <span id="theorem3">Theorem 3: Given *BB<sub>L</sub>(n)*, *BB<sub>L</sub>(n+1)* can be determined with *O(log(log(n)))* advice bits for almost all *n*</span>
@@ -139,6 +131,18 @@ Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the
 - *p <= (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
 - *p <= O(1) + O(log(log(n))) + \|enc(p)\|*
 - *p <= O(log(log(n)))*  ∎
+
+#### <span id="corollary4">Corollary 4: Given *Σ<sub>L</sub>(n)*, *Σ<sub>L</sub>(n+1)* can be determined with *O(log(log(n)))* advice bits for almost all *n*</span>
+
+TODO proofify this
+
+Often, *Σ<sub>L</sub>(n)* is considered rather than *BB<sub>L</sub>(n)*. Recall that, while *BB<sub>L</sub>(n)* is the maximum *runtime* of halting *n*-bit programs in *L*, *Σ<sub>L</sub>(n)* is the largest integer produced by halting *n*-bit programs in *L*. As Chaitin[^13] observes, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. This can be shown with a constant-length *L* interpreter that runs a program in *L*, and returns the program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n)* is at least as large as *BB<sub>L</sub>(n-c)*. Since a function that is larger than *BB<sub>L</sub>(n-c)* can be used to compute *BB<sub>L</sub>(n-c)*, *Σ<sub>L</sub>(n)* gives us *BB<sub>L</sub>(n-c)*.
+
+To correct for this reduced *BB<sub>L</sub>(n-c)*, we use the same value for *n* as in the case when *BB<sub>L</sub>(n)* is known. However, we adjust the length of the *candidate* bits to be *c* bits shorter, so:
+- *read bits = n - \|doesThisManyHalt\| - c - \|enc(n)\| - \|enc(p)\|*
+- *read bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
+
+which gives the same (big-O) value for "read bits" as was found with *BB<sub>L</sub>(n)*. Similarly, we subtract *c* in the logic in *doesThisManyHalt* where we infer the number of bits to read, the amount of padding we add to *candidate*, and the point at which we reset *candidate* and increment *p* instead. *doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Finally, note that once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we determine *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the largest output (rather than the one with the longest runtime). The rest of the proof follows for *Σ<sub>L</sub>(n)*.
 
 ---
 
@@ -207,11 +211,11 @@ which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll n
 [^1]: Scott Aaronson. 2020. The Busy Beaver Frontier. <https://www.scottaaronson.com/papers/bb.pdf>
 [^2]: G. Chaitin. To a mathematical theory of evolution and biological creativity. Technical Report 391, Centre for Discrete Mathematics and Theoretical Computer Science, 2010. <https://www.cs.auckland.ac.nz/research/groups/CDMTCS/researchreports/391greg.pdf>.
 [^3]: Radó, Tibor (May 1962). [On non-computable functions.](https://gwern.net/doc/cs/computable/1962-rado.pdf) Bell System Technical Journal. 41 (3): 877–884.
+[^4]: Lubeck, Brian & Ponomarenko, Vadim. (2018). [Subsums of the Harmonic Series.](https://vadim.sdsu.edu/lp.pdf) The American Mathematical Monthly. 125. 351-355. 10.1080/00029890.2018.1420996. 
 [^7]: Chaitin, G.J. (1995). [The Limits of Mathematics---Tutorial Version.](https://arxiv.org/pdf/chao-dyn/9509010) arXiv: Chaotic Dynamics.
-[^12]: Alexander Shen, Vladimir A. Uspensky, and and Nikolay Vereshchagin. Kolmogorov complexity and algorithmic randomness. Kolmogorov complexity and algorithmic randomness, volume 220. American Mathematical Soc., 2017.
-[^13]: Chaitin, G.J. (1987). Computing the Busy Beaver Function. In: Cover, T.M., Gopinath, B. (eds) Open Problems in Communication and Computation. Springer, New York, NY. <https://doi.org/10.1007/978-1-4612-4808-8_28>
 [^8]: Tromp, John. (2006). [Binary Lambda Calculus and Combinatory Logic.](https://tromp.github.io/cl/LC.pdf) 10.1142/9789812770837_0014. 
 [^9]: Michael Stay. 2005. [Very Simple Chaitin Machines for Concrete AIT.](https://arxiv.org/pdf/cs/0508056) Fundam. Inf. 68, 3 (August 2005), 231–247.
 [^10]: Tibor Šalát. 1964. [On subseries.](https://resolver.sub.uni-goettingen.de/purl?PPN266833020_0085) Mathematische Zeitschrift, Volume 85, Number 3, 209-225.
-[^4]: Lubeck, Brian & Ponomarenko, Vadim. (2018). [Subsums of the Harmonic Series.](https://vadim.sdsu.edu/lp.pdf) The American Mathematical Monthly. 125. 351-355. 10.1080/00029890.2018.1420996. 
+[^12]: Alexander Shen, Vladimir A. Uspensky, and and Nikolay Vereshchagin. Kolmogorov complexity and algorithmic randomness. Kolmogorov complexity and algorithmic randomness, volume 220. American Mathematical Soc., 2017.
+[^13]: Chaitin, G.J. (1987). Computing the Busy Beaver Function. In: Cover, T.M., Gopinath, B. (eds) Open Problems in Communication and Computation. Springer, New York, NY. <https://doi.org/10.1007/978-1-4612-4808-8_28>
 
