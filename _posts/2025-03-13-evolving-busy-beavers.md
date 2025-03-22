@@ -67,7 +67,7 @@ The definition of Chaitin's constant *Ω* is, for all halting programs *p* in *L
 - *Ω >= Σ 2<sup>-n</sup>2<sup>n</sup>/n* for all *n = 1 → ∞* such that *H<sub>n</sub> >= 2<sup>n</sup> / n*
 - *Ω >= Σ 1/n* for all *n = 1 → ∞* such that *H<sub>n</sub> >= 2<sup>n</sup> / n*
 
-So, Chaitin's constant is greater than or equal to some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. ∎
+So, Chaitin's constant is greater than or equal to some subset of the harmonic series, specifically the subset of *n* where *H<sub>n</sub> >= 2<sup>n</sup> / n*. However, Chaitin's constant is finite, which per Theorem 1 of Lubeck and Ponomarenko[^4] means that the elements of the harmonic series that add to *Ω* must have asymptotic density of 0, so such *n* must have asymptotic density 0. Conversely, *n* such that *H<sub>n</sub> < 2<sup>n</sup> / n* must have asymptotic density 1. □
 
 #### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* and a number of advice bits, *p*, such that *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
@@ -118,7 +118,7 @@ So if *p'* is nonzero:
 To get the the value of *p'*, we take the number of bits to represent *H<sub>n+1</sub>* in a non-prefix-free manner, and subtract the number of bits of *candidate'*:
 - *p' = (bits of H<sub>n+1</sub>) - (bits of candidate')*
 - *p' = log(H<sub>n+1</sub>) + 1 - (n - O(1) - \|enc(n)\| - \|enc(p')\|)*
-- *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* ∎
+- *p' = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p')\| - n* □
 
 __Remarks:__ It is noticeable that, while this Lemma and Theorem 20[^1] use similar procedures (estimating *H<sub>n+1</sub>* or *Ω<sub>n+1</sub>* through iterated runs, tallying halting machines), this Lemma required significantly more paperwork than Theorem 20. This is because Theorem 20 was proving that the advice bits needed were *O(log n)*, but the savings from Lemma 1 provide *exactly* *log n* advice bits. Rather than encoding both *n* and the candidate bitstring in a prefix-free way, which would have simplified the reasoning, we could only get away with encoding a single one of these. 
 
@@ -129,7 +129,7 @@ Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the
 - *p < log(2^(n+1) / (n+1)) + O(1) + \|enc(n)\| + \|enc(p)\| - n* 
 - *p <= (n + 1) - log(n+1) + O(1) + log(n) + O(log(log(n))) + \|enc(p)\| - n*
 - *p <= O(1) + O(log(log(n))) + \|enc(p)\|*
-- *p <= O(log(log(n)))*  ∎
+- *p <= O(log(log(n)))*  □
 
 #### <span id="corollary4">Corollary 4: Given *Σ<sub>L</sub>(n)*, *Σ<sub>L</sub>(n+1)* can be determined with *O(log(log(n)))* advice bits for almost all *n*</span>
 
@@ -147,7 +147,7 @@ This gives the same (big-O) value for "candidate bits" as was found with *BB<sub
 - the point at which we reset *candidate* and increment *p* instead
 - the demonstration that *candidate bits = log(candidate') + 1*, where the known length of the program is *n-c* rather than *n*
 
-*doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we compute *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the longest string (rather than the program with the longest runtime). The rest of the proof follows. ∎
+*doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we compute *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the longest string (rather than the program with the longest runtime). The rest of the proof follows. □
 
 ---
 
