@@ -24,8 +24,8 @@ The language *L* in this proof is prefix-free, universal, and has __self-delimit
 A key benefit of this property is that languages with self-delimiting input can accept strings in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This makes *L* "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem).
 
 While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a number of reasons:
-- It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html)
-- It expands the scope of the Busy Beaver function to include both programs and their inputs
+- It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://en.wikipedia.org/wiki/Chaitin%27s_constant)
+- It makes the Busy Beaver function "optimal", i.e. for any universal prefix-free language *L2* (not necessarily with self-delimited input) there exists a constant *c* such that for all *n*, *BB<sub>L</sub>(n+c) >= BB<sub>L2</sub>(n)*
 - It lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
 - It lets us mostly ignore (with *O(1)* overhead) the distinction between *BB<sub>L</sub>(n)* and *Σ<sub>L</sub>(n)* (see [Corollary 4](#corollary4))
 
@@ -42,10 +42,10 @@ This has a number of implications, though the two most relevant for this proof a
 There are a number of different Busy Beaver variants, including:
 1. *BB(n)*: the maximum number of shifts performed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. Radó[^3] originally named this function *S(n)* but *BB(n)* is much more commonly used, including in Frontier[^1]. 
 1. *Σ(n)*: the maximum number of ones printed by an *n*-state, two-symbol, halting Turing machines starting on an all-zero tape. This is the "traditional" Busy Beaver function envisioned by Radó.
-1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB<sub>L</sub>(n)* in Frontier, plus the constraint that *L* has self-delimiting input.
-1. *Σ<sub>L</sub>(n)*: the length of the longest string returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB'<sub>L</sub>(n)* in Frontier, plus the constraint that *L* has self-delimiting input.
+1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free and universal.
+1. *Σ<sub>L</sub>(n)*: the length of the longest string returned by an *n*-bit, halting program in language *L* that is prefix-free and universal. Denoted *BB'<sub>L</sub>(n)* in Frontier.
 
-Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory. It does not depend on implementation details -- the "runtime" that determines the value of *BB<sub>L</sub>(n)* could be the number of CPU cycles, Turing machine shifts, β-reductions in Lambda calculus, or any other notion of a "computational step", but *Σ<sub>L</sub>(n)* is only determined by output strings. It also links the Busy Beaver function to Kolmogorov complexity, as *Σ<sub>L</sub>(n)* has the equivalent definition "the length of the longest string whose Kolmogorov complexity in *L* is *n*". It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. 
+Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory. It has the property that it does not depend on implementation details -- the precise value of *BB<sub>L</sub>(n)* depends on whether "runtime" means the number of CPU cycles, Turing machine shifts, β-reductions in Lambda calculus, or some other notion of a "computational step", but *Σ<sub>L</sub>(n)* is only determined by output strings. When coupled with a language *L* that has self-delimited inputs, it also links the Busy Beaver function to Kolmogorov complexity, as *Σ<sub>L</sub>(n)* is then equivalent to "the length of the longest string whose Kolmogorov complexity in *L* is *n*". It has been observed by Chaitin[^13] that, with such an *L*, *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*. That is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. 
 
 This paper uses variant (3), *BB<sub>L</sub>(n)*, consistent with Frontier. If *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*, there are a few amendments needed to reflect this *O(1)* overhead. These changes are described in [Corollary 4](#corollary4), and do not affect the *O(log log n)* bounds of the proof.
 
@@ -71,9 +71,9 @@ So, Chaitin's constant is greater than or equal to some subset of the harmonic s
 
 #### <span id="lemma2">Lemma 2: There is a procedure that can be used to determine *BB<sub>L</sub>(n+1)* from *BB<sub>L</sub>(n)* and a number of advice bits, *p*, such that *p = log(H<sub>n+1</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*</span>
 
-The procedure we describe will be similar to that described in Theorem 20[^1], except with testing approximations of *H<sub>n+1</sub>* rather than approximations of Chaitin's constant. The other primary difference will be a parameter *p*, which will encode the imprecision in our candidate for *H<sub>n+1</sub>*. We describe an *L*-program *doesThisManyHalt* (pseudocode in [Appendix A](#appendixA)). In the procedure below, we run this program multiple times, varying the inputs each time. By using *BB<sub>L</sub>(n)* to evaluate whether the program halts on any particular set of inputs, we will be able to arrive at an estimate for *H<sub>n+1</sub>* with *p* bits of lost precision.
+The procedure we describe will be similar to that described in Theorem 20[^1], except with testing approximations of *H<sub>n+1</sub>* rather than approximations of Chaitin's constant. The other primary difference will be a parameter *p*, which will encode the imprecision in our candidate for *H<sub>n+1</sub>*. We describe an *L*-program *doesThisManyHalt* (pseudocode in [Appendix A](#appendixA)). We run this program multiple times, varying the inputs each time. By using *BB<sub>L</sub>(n)* to evaluate whether the program halts on any particular set of inputs, we will be able to arrive at an estimate for *H<sub>n+1</sub>* with *p* bits of lost precision.
 
-__Inputs and total program size:__ *doesThisManyHalt* consists of its constant-length program definition with two prefix-free inputs appended. Those inputs are *n* (the length of the known *BB<sub>L</sub>(n)*) and *p* (the amount of imprecision in our candidate estimate for *H<sub>n+1</sub>*). The remainder of the input string is the most significant digits of the candidate. These candidate digits are expressed as a simple binary integer, *candidate*, rather than prefix-free, with the length inferred from the other inputs: 
+__Inputs and total program size:__ *doesThisManyHalt* consists of its constant-length program definition with two prefix-free inputs appended. Those inputs are *n* (the length of the known *BB<sub>L</sub>(n)*) and *p* (the amount of imprecision in our candidate estimate for *H<sub>n+1</sub>*). The remainder of the input string is the most significant digits of the candidate. These candidate digits are expressed as a simple non-prefix-free binary integer, *candidate*, with the length inferred from the other inputs: 
 - *candidate bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\|*
 - *candidate bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
@@ -85,7 +85,7 @@ Recall that a string is in *L* if it both halts *and* all input bits are read. S
 
 __Estimating H<sub>n+1</sub>:__ Suppose we know *BB<sub>L</sub>(n)*. Because *doesThisManyHalt* plus its inputs are a length *n* *L*-program, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB<sub>L</sub>(n)*: 
 - Start with *candidate = 0* and *p = 0*.
-- Run *doesThisManyHalt* with prefix-free *n* and *p*, with *candidate* encoded into *candidate bits* as a non-prefix-free binary string, left-padded so that the full length is *n*. Use *BB<sub>L</sub>(n)* to determine if it halts.
+- Run *doesThisManyHalt* with prefix-free *n* and *p*, with *candidate* encoded into *candidate bits* as a non-prefix-free binary string, left-padded so that the full length of the program is *n*. Use *BB<sub>L</sub>(n)* to determine if it halts.
 - If *doesThisManyHalt* halts, *H<sub>n+1</sub> >= candidate \* 2<sup>p</sup>*. Increment *candidate* by one. If that pushes the total length (program and inputs) over *n*, reset *candidate* to zero and increment *p* instead. Return to the previous step.
 - If *doesThisManyHalt* does not halt, *H<sub>n+1</sub> < candidate \* 2<sup>p</sup>*. Call the inputs to the first non-halting run *candidate'* and *p'*.
 
@@ -104,7 +104,7 @@ __Upper bounds on *p'*:__ Recall from "Inputs and total program size" that:
 We can infer that either *p' = 0* (in which case we have a precise value for *H<sub>n+1</sub>* and can determine *BB<sub>L</sub>(n+1)*) or *candidate bits = log(candidate') + 1*.
 
 - For sake of contradiction, assume otherwise: *p' > 0* and *candidate bits > log(candidate') + 1*. For this to be true, there would need to be at least one bit of padding in front of *candidate'*. Recall also that *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>*. 
-- Observe that *\|enc(p')\| >= \|enc(p'-1)\|* and both *candidate' \* 2* and *candidate' \* 2 - 1* are at most one bit longer than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with at most one less bit of padding. 
+- Observe that *\|enc(p'-1)\| <= \|enc(p')\|* and both *candidate' \* 2* and *candidate' \* 2 - 1* are at most one bit longer than *candidate'*. So, since *doesThisManyHalt* with inputs *p'* and *candidate'* and at least one bit of padding is equal to *n*, *doesThisManyHalt* with inputs *p'-1* and either *candidate' \* 2* or *candidate' \* 2 - 1* would have been at most *n* bits, with at most one less bit of padding. 
 - At least one of these inputs would have resulted in non-halting *doesThisManyHalt*:
   - If *(candidate' - 1) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < (candidate' - 1/2) \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2 - 1* would not have halted
   - If *(candidate' - 1/2) \* 2<sup>p'</sup> <= H<sub>n+1</sub> < candidate' \* 2<sup>p'</sup>* then *doesThisManyHalt* with inputs *p-1* and *candidate' \* 2* would not have halted
@@ -135,17 +135,19 @@ Substituting the upper bound of *H<sub>n</sub>* from [Lemma 1](#lemma1) into the
 
 Often, *Σ<sub>L</sub>(n)* is considered rather than *BB<sub>L</sub>(n)*. We will show that the same (big-O) number of advice bits is needed to determine *Σ<sub>L</sub>(n+1)* given *Σ<sub>L</sub>(n)*. [Lemma 1](#lemma1) and [Theorem 3](#theorem3) do not directly use *BB<sub>L</sub>(n)*, so it suffices to show that [Lemma 2](#lemma2) holds with *Σ<sub>L</sub>(n+1)* instead of *BB<sub>L</sub>(n+1)*.
 
-Recall that, while *BB<sub>L</sub>(n)* is the maximum runtime of halting *n*-bit programs in *L*, *Σ<sub>L</sub>(n)* is the *length of the longest string* produced by halting *n*-bit programs in *L*. As Chaitin[^13] observes, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. This can be shown with a constant-length *L*-interpreter that runs a program in *L*, and returns a string whose length is that program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n)* is at least as large as *BB<sub>L</sub>(n-c)*. Since any function that gives an upper bound for *BB<sub>L</sub>(n-c)* can be used to compute *BB<sub>L</sub>(n-c)*, *Σ<sub>L</sub>(n)* gives us *BB<sub>L</sub>(n-c)*.
+Recall that, while *BB<sub>L</sub>(n)* is the maximum runtime of halting *n*-bit programs in *L*, *Σ<sub>L</sub>(n)* is the length of the longest string produced by halting *n*-bit programs in *L*. As Chaitin[^13] observes, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. This can be shown with a constant-length *L*-interpreter that runs a program in *L*, and returns a string whose length is that program's runtime. If the *L*-interpreter for calculating runtime is *c* bits long, then *Σ<sub>L</sub>(n)* is at least as large as *BB<sub>L</sub>(n-c)*. Since any function that gives an upper bound for *BB<sub>L</sub>(n-c)* can be used to compute *BB<sub>L</sub>(n-c)*, *Σ<sub>L</sub>(n)* gives us *BB<sub>L</sub>(n-c)*.
 
 In Lemma 2, the only place where we use *BB<sub>L</sub>(n)* is when we use it to determine if *doesThisManyHalt* and its inputs halt. Because *Σ<sub>L</sub>(n)* only gives us *BB<sub>L</sub>(n-c)*, we have to make *doesThisManyHalt* and its inputs *c* bits shorter. The program itself and most of its inputs are fixed in length (*\|doesThisManyHalt\|*, *\|enc(n)\|*) or set deterministically (*\|len(enc(p)\|*), so we reduce the candidate bits. So:
 - *candidate bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\| - c*
 - *candidate bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
+TODO
+
 This gives the same (big-O) value for "candidate bits" as was found with *BB<sub>L</sub>(n)*, so all of the derivations based on this equality hold without modification. We update the text of the proof as follows to reflect that *doesThisManyHalt* now has *n-c* bits, subtracting *c* in the following locations:
-- the logic in *doesThisManyHalt* where we infer the number of candidate bits to read (the updated pseudocode would read `int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)| - c;`)
+- in *doesThisManyHalt* we subtract an additional *c* when inferring the number of candidate bits to read (the updated pseudocode would read `int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)| - c;`)
 - the amount of padding we add to *candidate*
 - the point at which we reset *candidate* and increment *p* instead
-- the demonstration that *candidate bits = log(candidate') + 1*, where the known length of the program is *n-c* rather than *n*
+- in the demonstration that if *p' > 0* then *candidate bits = log(candidate') + 1*, the known length of the program is *n-c* rather than *n*
 
 *doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we compute *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the longest string (rather than the program with the longest runtime). The rest of the proof follows. □
 
