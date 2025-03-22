@@ -17,26 +17,25 @@ More precisely: [Lemma 1](#lemma1) shows that for almost all *n*, *log(H<sub>n+1
 
 ##### A note about the language *L*
 
-The language *L* in this proof is prefix-free, universal, and has __self-delimiting input__. That is, a string in *L* is a concatenation of an *L*-expression and the input to that *L*-expression. The *L*-expression is not given the length of the input, and instead must decide how many input bits to read. Languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
+The language *L* in this proof is prefix-free, universal, and has __self-delimiting input__. That is, a string in *L* is a concatenation of an *L*-expression and zero or more bits of input to that *L*-expression, where the *L*-expression halts after reading exactly as many bits of input as have been concatenated to the *L*-expression. The *L*-expression is not given the length of the input, and instead must "decide" how many input bits to read, making it self-delimiting and therefore prefix-free. Languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
 
 > It is helpful to consider a Chaitin machine in Shannon’s original sender-pipe-receiver model. Borrowing terminology from concurrent programming, the pipe is a shared resource. The input to the machine is held by the sender, a producer. The sender tries to put its bits into the pipe; it blocks if there are more bits to send and the pipe is full. When there are no more bits to send, the sender halts. The Chaitin machine is the receiver, a consumer. From time to time it tries to get bits out of the pipe, and blocks if the pipe is empty. The entire computation is said to halt if the sender halts, the Chaitin machine halts, and the pipe is empty.
 
-A key benefit of this property is that languages with self-delimiting input can accept strings in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter.
+A key benefit of this property is that languages with self-delimiting input can accept strings in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This makes *L* "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem).
 
 While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a number of reasons:
 - It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://mathworld.wolfram.com/ChaitinsConstant.html)
-- It expands the scope of the Busy Beaver function to include both programs and inputs, making it "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem)
+- It expands the scope of the Busy Beaver function to include both programs and their inputs
 - It lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
 - It lets us mostly ignore (with *O(1)* overhead) the distinction between *BB<sub>L</sub>(n)* and *Σ<sub>L</sub>(n)* (see [Corollary 4](#corollary4))
-- It makes the arithmetic in Lemma 2 much less tedious
 
-Examples of languages that have this property are Chaitin's LISP variant[^7], Binary Lambda Calculus[^8], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine, where one of the tapes is a read-only unidirectional "input" tape. For example, in the construction of Chaitin's LISP, programs have access a *read-bit* primitive function that consumes a single bit from the pipe.
+Examples of languages that have this property are Chaitin's LISP variant[^7], self-delimited Binary Lambda Calculus[^14], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine where one of the tapes is a read-only unidirectional "input" tape, and the machine loops forever if it tries to read more bits than exist on the input tape.
 
 This has a number of implications, though the two most relevant for this proof are:
 - We don't have to enforce any requirements about the features or behavior of *L*, other than that it is prefix-free, universal, and has self-delimiting input. 
   - If there's some feature we need, we can assume that the feature is in some language *L2*, which means that *L* plus constant overhead also has that feature via the *L2*-interpreter.
 - To determine if a string is in *L*, we need to see if it halts *and* if it read all of the string's input bits. 
-  - For example: take a string *s* with total length *m* that consists of an *L*-expression plus zero or more input bits appended. If *s* halts, that might be because it's a complete *L*-program with length *m*. However, if it is instead a shorter program prefixed to some unnecessary bits, it is not in *L* because it doesn't read all of the input bits (i.e. *L* is prefix-free).
+  - For example: take a string *s* with total length *m* that consists of an *L*-expression plus zero or more input bits appended. If *s* halts after reading all of the input bits, it's a complete *L*-program with length *m*. However, if it halts without reading some bits, then it's instead a shorter program with some unnecessary bits appended, and is not in *L* because *L* is prefix-free.
 
 ##### <span id="bbVariants">A note about Busy Beaver variants</span>
 
@@ -46,7 +45,7 @@ There are a number of different Busy Beaver variants, including:
 1. *BB<sub>L</sub>(n)*: the maximum runtime of an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB<sub>L</sub>(n)* in Frontier, plus the constraint that *L* has self-delimiting input.
 1. *Σ<sub>L</sub>(n)*: the length of the longest string returned by an *n*-bit, halting program in language *L* that is prefix-free, universal, and has self-delimiting input. Similar to *BB'<sub>L</sub>(n)* in Frontier, plus the constraint that *L* has self-delimiting input.
 
-Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory. It does not depend on implementation details -- the "runtime" could be the number of CPU cycles, Turing machine shifts, β-reductions in Lambda calculus, or any other notion of a "computational step" without affecting the actual value of *Σ<sub>L</sub>(n)*. This variant also links the Busy Beaver function to Kolmogorov complexity, as *Σ<sub>L</sub>(n)* has the equivalent definition "the length of the longest string whose Kolmogorov complexity in *L* is *n*". It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. 
+Variant (4), *Σ<sub>L</sub>(n)*, is perhaps the most interesting for Algorithmic Information Theory. It does not depend on implementation details -- the "runtime" that determines the value of *BB<sub>L</sub>(n)* could be the number of CPU cycles, Turing machine shifts, β-reductions in Lambda calculus, or any other notion of a "computational step", but *Σ<sub>L</sub>(n)* is only determined by output strings. It also links the Busy Beaver function to Kolmogorov complexity, as *Σ<sub>L</sub>(n)* has the equivalent definition "the length of the longest string whose Kolmogorov complexity in *L* is *n*". It has been observed by Chaitin[^13] that *Σ<sub>L</sub>(n)* bounds *BB<sub>L</sub>(n)* within *O(1)*, that is, *BB<sub>L</sub>(n - O(1)) <= Σ<sub>L</sub>(n)*. 
 
 This paper uses variant (3), *BB<sub>L</sub>(n)*, consistent with Frontier. If *Σ<sub>L</sub>(n)* is known rather than *BB<sub>L</sub>(n)*, there are a few amendments needed to reflect this *O(1)* overhead. These changes are described in [Corollary 4](#corollary4), and do not affect the *O(log log n)* bounds of the proof.
 
@@ -82,7 +81,7 @@ Note that it's possible for the length of the binary expression of *candidate* t
 
 __Program logic:__ First, the number of candidate bits is inferred by subtracting from *n* the length of the program definition (a hard-coded constant) and the lengths of the prefix-free encodings of the inputs *n* and *p*. It reads in the candidate bits as a binary number (with `read_bit()` in the pseudocode), and stores that number as *candidate*. The special case where *candidate = 0* is checked, and immediately halts if so. It then iterates through each of the *2<sup>n+1</sup>* strings of length *n+1*, emulating them as *L*-programs in parallel. Whenever one of the programs halts with total size *n+1* bits (both *L*-expression and input bits), it is added to a tally *halted*. If that tally reaches *candidate* multiplied by *2<sup>p</sup>*, then *doesThisManyHalt* halts. 
 
-Recall that a string is in *L* if it both halts *and* all input bits are read. So, the *L*-program emulator in *doesThisManyHalt* must track how many input bits are read by the *L*-programs, so that only those that halt with a total size of *n+1* bits are added to the tally. Similarly, if a program tries to read more bits than are provided as input, it blocks and never halts. These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
+Recall that a string is in *L* if it both halts *and* all input bits are read. So, the *L*-program emulator in *doesThisManyHalt* must track how many input bits are read by the *L*-programs, so that only those that halt with a total size of *n+1* bits are added to the tally. If they read fewer bits of input, then the string is not a valid *L*-program. Similarly, if a program tries to read more bits than are provided as input, then the string is not a valid *L*-program (we can say that it blocks and never halts). These features of the *L*-program emulator are part of the program definition of *doesThisManyHalt*, adding *O(1)* to the total length of *doesThisManyHalt* and its inputs.
 
 __Estimating H<sub>n+1</sub>:__ Suppose we know *BB<sub>L</sub>(n)*. Because *doesThisManyHalt* plus its inputs are a length *n* *L*-program, we can evaluate whether it halts. This can be used in a test to estimate *H<sub>n+1</sub>* given *BB<sub>L</sub>(n)*: 
 - Start with *candidate = 0* and *p = 0*.
@@ -187,7 +186,7 @@ doesThisManyHalt(int n, int p) {
         exit;
     }
     int halted = 0;
-    getAllProgramsOfLength(n + 1).runInParallel().whenHalt(program -> {
+    getAllStringsOfLength(n + 1).runInParallel().whenHalt(program -> {
         if (program.expression_length + program.read_bits == n+1) {
             halted++;
             if (halted >= candidate * 2 ^ p) {
@@ -220,6 +219,7 @@ which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll n
 [^4]: Lubeck, Brian & Ponomarenko, Vadim. (2018). [Subsums of the Harmonic Series.](https://vadim.sdsu.edu/lp.pdf) The American Mathematical Monthly. 125. 351-355. 10.1080/00029890.2018.1420996. 
 [^7]: Chaitin, G.J. (1995). [The Limits of Mathematics---Tutorial Version.](https://arxiv.org/pdf/chao-dyn/9509010) arXiv: Chaotic Dynamics.
 [^8]: Tromp, John. (2006). [Binary Lambda Calculus and Combinatory Logic.](https://tromp.github.io/cl/LC.pdf) 10.1142/9789812770837_0014. 
+[^14]: Tromp, John. [Binary Lambda Calculus.](https://tromp.github.io/cl/Binary_lambda_calculus.html)
 [^9]: Michael Stay. 2005. [Very Simple Chaitin Machines for Concrete AIT.](https://arxiv.org/pdf/cs/0508056) Fundam. Inf. 68, 3 (August 2005), 231–247.
 [^10]: Tibor Šalát. 1964. [On subseries.](https://resolver.sub.uni-goettingen.de/purl?PPN266833020_0085) Mathematische Zeitschrift, Volume 85, Number 3, 209-225.
 [^12]: Alexander Shen, Vladimir A. Uspensky, and and Nikolay Vereshchagin. Kolmogorov complexity and algorithmic randomness. Kolmogorov complexity and algorithmic randomness, volume 220. American Mathematical Soc., 2017.
