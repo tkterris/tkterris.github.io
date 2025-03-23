@@ -1,5 +1,5 @@
 ---
-modified_date: 2025-03-22
+modified_date: 2025-03-23
 ---
 # Deriving BB_L(n+1) from BB_L(n) with O(log log n) advice bits
 
@@ -17,21 +17,17 @@ More precisely: [Lemma 1](#lemma1) shows that for almost all *n*, *log(H<sub>n+1
 
 ##### A note about the language *L*
 
-The language *L* in this proof is prefix-free, universal, and has __self-delimiting input__. That is, a string in *L* is a concatenation of an *L*-expression and zero or more bits of input to that *L*-expression, where the *L*-expression halts after reading exactly as many bits of input as have been concatenated to the *L*-expression. The *L*-expression is not given the length of the input, and instead must "decide" how many input bits to read, making it self-delimiting and therefore prefix-free. Languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. As described by Stay[^9] (noting that the term "Chaitin machine" is used): 
-
-> It is helpful to consider a Chaitin machine in Shannon’s original sender-pipe-receiver model. Borrowing terminology from concurrent programming, the pipe is a shared resource. The input to the machine is held by the sender, a producer. The sender tries to put its bits into the pipe; it blocks if there are more bits to send and the pipe is full. When there are no more bits to send, the sender halts. The Chaitin machine is the receiver, a consumer. From time to time it tries to get bits out of the pipe, and blocks if the pipe is empty. The entire computation is said to halt if the sender halts, the Chaitin machine halts, and the pipe is empty.
-
-A key benefit of this property is that languages with self-delimiting input can accept strings in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This makes *L* "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem).
-
-While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a number of reasons:
-- It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://en.wikipedia.org/wiki/Chaitin%27s_constant)
-- It makes the Busy Beaver function "optimal", i.e. for any universal prefix-free language *L2* (not necessarily with self-delimited input) there exists a constant *c* such that for all *n*, *BB<sub>L</sub>(n+c) >= BB<sub>L2</sub>(n)*
-- It lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
-- It lets us mostly ignore (with *O(1)* overhead) the distinction between *BB<sub>L</sub>(n)* and *Σ<sub>L</sub>(n)* (see [Corollary 4](#corollary4))
+The language *L* in this proof is prefix-free, universal, and has __self-delimiting input__. That is, a string in *L* is a concatenation of an *L*-expression bitstring and an input bitstring, *b*, where the *L*-expression reads exactly *\|b\|* bits of input before halting. The *L*-expression is not given the length of *b*, and instead must "decide" how many input bits to read, making it self-delimiting and therefore prefix-free. Languages with this feature have also been referred to as "Chaitin machines"[^9], "optimal description"[^12], or simply "universal"[^8]. A key benefit of this property is that *L* can accept strings in any other prefix-free language *L2*, with an *O(1)* overhead for an *L*-expression that is an *L2*-interpreter. This makes *L* "optimal" in the sense of the [invariance theorem](https://en.wikipedia.org/wiki/Kolmogorov_complexity#Invariance_theorem). 
 
 Examples of languages that have this property are Chaitin's LISP variant[^7], self-delimited Binary Lambda Calculus[^14], and Keraia[^9]. It can also be envisioned[^12] as a multi-tape Turing Machine where one of the tapes is a read-only unidirectional "input" tape, and the machine loops forever if it tries to read more bits than exist on the input tape.
 
-This has a number of implications, though the two most relevant for this proof are:
+While this does differ from Theorem 20 (which covers "standard prefix-free universal" languages), I'm adding the self-delimiting input constraint for a number of reasons:
+- It matches Chaitin's proof 5.1[^2] and the definition of [Chaitin's constant](https://en.wikipedia.org/wiki/Chaitin%27s_constant)
+- It makes the Busy Beaver function "optimal", i.e. for any universal prefix-free language *L2* (not necessarily with self-delimited input) there exists a constant *c* such that for all *n*, *BB<sub>L</sub>(n+c) >= BB<sub>L2</sub>(n)*[^15]
+- It lets us add arbitrary properties (such as efficient Levenshtein coding of integers) to *L* with only a constant overhead
+- It lets us mostly ignore (with *O(1)* overhead) the distinction between *BB<sub>L</sub>(n)* and *Σ<sub>L</sub>(n)* (see [Corollary 4](#corollary4))
+
+The implications for this proof are:
 - We don't have to enforce any requirements about the features or behavior of *L*, other than that it is prefix-free, universal, and has self-delimiting input. 
   - If there's some feature we need, we can assume that the feature is in some language *L2*, which means that *L* plus constant overhead also has that feature via the *L2*-interpreter.
 - To determine if a string is in *L*, we need to see if it halts *and* if it read all of the string's input bits. 
@@ -141,13 +137,11 @@ In Lemma 2, the only place where we use *BB<sub>L</sub>(n)* is when we use it to
 - *candidate bits = n - \|doesThisManyHalt\| - \|enc(n)\| - \|enc(p)\| - c*
 - *candidate bits = n - O(1) - \|enc(n)\| - \|enc(p)\|*
 
-TODO
-
-This gives the same (big-O) value for "candidate bits" as was found with *BB<sub>L</sub>(n)*, so all of the derivations based on this equality hold without modification. We update the text of the proof as follows to reflect that *doesThisManyHalt* now has *n-c* bits, subtracting *c* in the following locations:
-- in *doesThisManyHalt* we subtract an additional *c* when inferring the number of candidate bits to read (the updated pseudocode would read `int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)| - c;`)
-- the amount of padding we add to *candidate*
-- the point at which we reset *candidate* and increment *p* instead
-- in the demonstration that if *p' > 0* then *candidate bits = log(candidate') + 1*, the known length of the program is *n-c* rather than *n*
+This gives the same (big-O) value for "candidate bits" as was found with *BB<sub>L</sub>(n)*, so all of the derivations based on this equality hold without modification. We then update the text of the proof to reflect that the program length of *doesThisManyHalt* now *n-c* bits:
+- we subtract an additional *c* when inferring the number of candidate bits to read in the logic of *doesThisManyHalt* (the updated pseudocode would read `int bitsToRead = n - |doesThisManyHalt| - |enc(n)| - |enc(p)| - c;`)
+- *candidate* is left-padded with zeroes to until the total length is *n-c*
+- we reset *candidate* and increment *p* when the total length is greater than *n-c* 
+- in the demonstration that if *p' > 0* then *candidate bits = log(candidate') + 1*, the known length of the program is *n-c*
 
 *doesThisManyHalt* and its inputs are now *n-c* bits, so we can use the known *BB<sub>L</sub>(n-c)* to determine whether it halts. Once we have sufficient advice bits to determine *H<sub>n+1</sub>*, we compute *Σ<sub>L</sub>(n+1)* by running all programs of length *2<sup>n+1</sup>* until *H<sub>n+1</sub>* of them halt, and select the halting program that produced the longest string (rather than the program with the longest runtime). The rest of the proof follows. □
 
@@ -222,6 +216,7 @@ which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll n
 [^7]: Chaitin, G.J. (1995). [The Limits of Mathematics---Tutorial Version.](https://arxiv.org/pdf/chao-dyn/9509010) arXiv: Chaotic Dynamics.
 [^8]: Tromp, John. (2006). [Binary Lambda Calculus and Combinatory Logic.](https://tromp.github.io/cl/LC.pdf) 10.1142/9789812770837_0014. 
 [^14]: Tromp, John. [Binary Lambda Calculus.](https://tromp.github.io/cl/Binary_lambda_calculus.html)
+[^15]: Tromp, John. (2023). [OEIS A361211](https://oeis.org/A361211)
 [^9]: Michael Stay. 2005. [Very Simple Chaitin Machines for Concrete AIT.](https://arxiv.org/pdf/cs/0508056) Fundam. Inf. 68, 3 (August 2005), 231–247.
 [^10]: Tibor Šalát. 1964. [On subseries.](https://resolver.sub.uni-goettingen.de/purl?PPN266833020_0085) Mathematische Zeitschrift, Volume 85, Number 3, 209-225.
 [^12]: Alexander Shen, Vladimir A. Uspensky, and and Nikolay Vereshchagin. Kolmogorov complexity and algorithmic randomness. Kolmogorov complexity and algorithmic randomness, volume 220. American Mathematical Soc., 2017.
