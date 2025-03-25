@@ -1,5 +1,5 @@
 ---
-modified_date: 2025-03-24
+modified_date: 2025-03-25
 ---
 # Deriving BB_L(n+1) from BB_L(n) with O(log log n) advice bits
 
@@ -205,13 +205,14 @@ Consider the prefix-free language which is defined:
 - If the first bit is a zero, treat the rest of the stream as input to the interpreter of some other prefix-free language (Lisp etc).
 - If the first bit is a one, continue reading the input until you reach a zero. Set *b* to be the number of initial ones read. Read *2<sup>2<sup>b</sup></sup> - b - 1* bits after the first zero (for a total of *2<sup>2<sup>b</sup></sup>* bits), then halt.
 
-In this case, for all *n* that can be expressed as *2<sup>2<sup>b</sup></sup>* for an integer *b*, the number of bits needed to count *H<sub>n</sub>* is at least:
-- *bits = log(H<sub>n</sub>) + 1*
-- *bits >= log(2^(2<sup>2<sup>b</sup></sup> - b - 1)) + 1*
-- *bits >= 2<sup>2<sup>b</sup></sup> - b - 1 + 1*
-- *bits >= n - log(log(n))*
+Let *k* be any integer that can be expressed as *2<sup>2<sup>b</sup></sup>* for an integer *b* (noting that therefore *b = log log k*), and *c* be the length of the constant-length interpreter for this language in *L*. From the above definition, there are at least *2^(k - b - 1)* halting programs of length *k+c*. Per [Lemma 2](#lemma2), for *n=k+c* this gives us:
+- *p <= log(H<sub>k+c</sub>) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
+- *p <= log(2^(k - b - 1)) + O(1) + \|enc(n)\| + \|enc(p)\| - n*
+- *p <= k - b + O(1) + \|enc(n)\| + \|enc(p)\| - n*
+- *p <= (n - c) - log(log(n - c)) + O(1) + log(n) + log(log(n)) + O(log log log n) + \|enc(p)\| - n*
+- *p <= O(log(n))*
 
-which means, with the prefix-free encoding of *n* in *doesThisManyHalt*, we'll need *O(log(n))* advice bits for infinitely many *n*. Specifically, for all *n* such that *n=2<sup>2<sup>b</sup></sup> + O(1)*, where the *O(1)* overhead is from the constant length of the interpreter for the above language for *L*. Such *n* occur with density *n<sup>-1</sup>log(log(n))*, which asymptotically approaches zero, so [Lemma 1](#lemma1) still holds. 
+so we'll need *O(log(n))* advice bits for infinitely many *n*. Specifically, for all *n* such that *n=k+c=2<sup>2<sup>b</sup></sup>+c*. Such *n* occur with density *n<sup>-1</sup>log(log(n-c))*, which asymptotically approaches zero, so [Lemma 1](#lemma1) still holds. 
 
 ---
 
